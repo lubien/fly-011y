@@ -341,17 +341,7 @@ configure() {
     info "FLY_API_TOKEN not set — skipping token file (Fly metrics will be unavailable)."
   fi
 
-  # ── 8. Generate nginx.conf from template ───────────────────────────────────
-  if [ -f "nginx.conf.template" ]; then
-    info "Generating nginx.conf…"
-    INGESTION_KEY="${INGESTION_KEY}" \
-      envsubst '${INGESTION_KEY}' < nginx.conf.template > nginx.conf
-    success "nginx.conf generated."
-  else
-    warn "nginx.conf.template not found — skipping nginx.conf generation."
-  fi
-
-  # ── 9. Generate otel-collector-config.yaml from template ───────────────────
+  # ── 8. Generate otel-collector-config.yaml from template ───────────────────
   if [ -f "otel-collector-config.yaml.template" ]; then
     info "Generating otel-collector-config.yaml…"
     sed "s/__FLY_ORG__/${_FLY_ORG}/g" \
