@@ -4,12 +4,14 @@
 # One-liner install:
 #   curl https://raw.githubusercontent.com/lubien/fly-011y/main/install.sh | bash
 #
-# When running non-interactively (pipe / CI), supply required values via env:
-#   SIGNOZ_EXTERNAL_URL=https://NAME.sprites.app \
+# When running non-interactively (pipe / CI):
 #   curl https://raw.githubusercontent.com/lubien/fly-011y/main/install.sh | bash
 #
+# On older sprites that don't expose sprite_url, supply it explicitly:
+#   SIGNOZ_EXTERNAL_URL=https://NAME.sprites.app curl ... | bash
+#
 # Optionally seed one Fly.io org during install (add more later with add-org):
-#   FLY_ORG=myorg FLY_API_TOKEN=FlyV1_... SIGNOZ_EXTERNAL_URL=... curl ... | bash
+#   FLY_ORG=myorg FLY_API_TOKEN=FlyV1_... curl ... | bash
 #
 # Post-install org management:
 #   install.sh add-org      — add a Fly.io org
@@ -221,6 +223,21 @@ configure() {
     # User-provided values — env vars or interactive prompts
     local signoz_external_url="${SIGNOZ_EXTERNAL_URL:-}"
 
+    # ── Auto-detect Sprite URL (newer sprites expose it in sprite-env info) ────
+    if [ -z "${signoz_external_url}" ] && command -v sprite-env &>/dev/null; then
+      local _detected_url
+      _detected_url=$(
+        sprite-env info 2>/dev/null \
+          | grep -o '"sprite_url":"[^"]*"' \
+          | cut -d'"' -f4 \
+        || true
+      )
+      if [ -n "${_detected_url}" ]; then
+        signoz_external_url="${_detected_url}"
+        info "Detected Sprite URL: ${signoz_external_url}"
+      fi
+    fi
+
     if [ "${STDIN_IS_TTY}" -eq 1 ]; then
       # ── Interactive mode ──────────────────────────────────────────────────
       echo ""
@@ -233,7 +250,7 @@ configure() {
     else
       # ── Pipe / non-interactive mode ───────────────────────────────────────────
       [ -n "${signoz_external_url}" ] || \
-        die "Pipe mode: \$SIGNOZ_EXTERNAL_URL is not set." \
+        die "Could not auto-detect Sprite URL and \$SIGNOZ_EXTERNAL_URL is not set." \
             "Prefix the curl command: SIGNOZ_EXTERNAL_URL=https://... curl ... | bash"
     fi
 
