@@ -20,16 +20,7 @@ receivers:
       global:
         scrape_interval: 60s
       scrape_configs:
-        - job_name: fly-federate-__FLY_ORG__
-          scheme: https
-          metrics_path: /prometheus/__FLY_ORG__/federate
-          params:
-            match[]: ['{__name__=~"fly_.*"}'] # only Fly metrics
-          static_configs:
-            - targets: ["api.fly.io"]
-          authorization:
-            type: FlyV1
-            credentials_file: /etc/otel/secret/fly_api_token
+# __FLY_ORG_SCRAPE_CONFIGS__
         - job_name: otel-collector
           static_configs:
             - targets:

@@ -5,10 +5,17 @@
 #   curl https://raw.githubusercontent.com/lubien/fly-011y/main/install.sh | bash
 #
 # When running non-interactively (pipe / CI), supply required values via env:
-#   FLY_ORG=myorg \
 #   SIGNOZ_EXTERNAL_URL=https://NAME.sprites.app \
-#   FLY_API_TOKEN=FlyV1_... \
 #   curl https://raw.githubusercontent.com/lubien/fly-011y/main/install.sh | bash
+#
+# Optionally seed one Fly.io org during install (add more later with add-org):
+#   FLY_ORG=myorg FLY_API_TOKEN=FlyV1_... SIGNOZ_EXTERNAL_URL=... curl ... | bash
+#
+# Post-install org management:
+#   install.sh add-org      — add a Fly.io org
+#   install.sh remove-org   — remove a Fly.io org
+#   install.sh list-orgs    — list configured orgs
+#   install.sh regen-config — regenerate otel config from current orgs
 
 set -euo pipefail
 
@@ -44,7 +51,6 @@ section() { printf "\n${BOLD}── %s${NC}\n" "$*"; }
 
 # ─── Script-level globals (set by configure(), read by print_access_info()) ───
 INGESTION_KEY=""
-_FLY_ORG=""
 _SIGNOZ_URL=""
 
 # ─── Helper: generate a random hex secret ──────────────────────────────────────
@@ -119,15 +125,10 @@ EOF
 # Ensure git + envsubst are present (safety net if Docker was pre-installed)
 # ══════════════════════════════════════════════════════════════════════════════
 ensure_tools() {
-  local need_install=0
-  command -v git      &>/dev/null || need_install=1
-  command -v envsubst &>/dev/null || need_install=1
-
-  if [ "${need_install}" -eq 1 ]; then
-    info "Installing missing utilities (git, gettext-base)…"
+  if ! command -v git &>/dev/null; then
+    info "Installing missing utilities (git)…"
     sudo apt-get update -qq
-    command -v git      &>/dev/null || sudo apt-get install -y git
-    command -v envsubst &>/dev/null || sudo apt-get install -y gettext-base
+    sudo apt-get install -y git
     success "Utilities ready."
   fi
 }
@@ -204,15 +205,10 @@ configure() {
     success "secrets.env already exists — reusing."
 
     INGESTION_KEY=$(env_get "${secrets_env}" "INGESTION_KEY")
-    _FLY_ORG=$(env_get "${secrets_env}" "FLY_ORG")
     _SIGNOZ_URL=$(env_get "${secrets_env}" "SIGNOZ_GLOBAL_EXTERNAL__URL")
 
     [ -n "${INGESTION_KEY}" ] || die "Could not read INGESTION_KEY from secrets.env"
-    [ -n "${_FLY_ORG}" ]     || die "Could not read FLY_ORG from secrets.env"
     [ -n "${_SIGNOZ_URL}" ]  || die "Could not read SIGNOZ_GLOBAL_EXTERNAL__URL from secrets.env"
-
-    # FLY_API_TOKEN is not stored in secrets.env; skip token-file refresh.
-    local fly_api_token=""
 
   else
     # ── Generate fresh secrets ──────────────────────────────────────────────
@@ -223,36 +219,22 @@ configure() {
     ingestion_key=$(gen_secret 20) # 20 bytes → 40 hex chars
 
     # User-provided values — env vars or interactive prompts
-    local fly_org="${FLY_ORG:-}"
-    local fly_api_token="${FLY_API_TOKEN:-}"
     local signoz_external_url="${SIGNOZ_EXTERNAL_URL:-}"
 
     if [ "${STDIN_IS_TTY}" -eq 1 ]; then
       # ── Interactive mode ──────────────────────────────────────────────────
       echo ""
-      while [ -z "${fly_org}" ]; do
-        printf "  Fly.io org slug (e.g., personal): "
-        read -r fly_org || fly_org=""
-        [ -n "${fly_org}" ] || warn "Fly.io org slug is required."
-      done
-
       while [ -z "${signoz_external_url}" ]; do
         printf "  Sprite public URL (e.g., https://NAME.sprites.app): "
         read -r signoz_external_url || signoz_external_url=""
         [ -n "${signoz_external_url}" ] || warn "Sprite public URL is required."
       done
 
-      printf "  Fly.io read-only API token (Enter to skip): "
-      read -r fly_api_token || fly_api_token=""
-
     else
-      # ── Pipe / non-interactive mode ───────────────────────────────────────
-      [ -n "${fly_org}" ] || \
-        die "Pipe mode: \$FLY_ORG is not set." \
-            "Prefix the curl command: FLY_ORG=myorg SIGNOZ_EXTERNAL_URL=https://... curl ... | bash"
+      # ── Pipe / non-interactive mode ───────────────────────────────────────────
       [ -n "${signoz_external_url}" ] || \
         die "Pipe mode: \$SIGNOZ_EXTERNAL_URL is not set." \
-            "Prefix the curl command: FLY_ORG=myorg SIGNOZ_EXTERNAL_URL=https://... curl ... | bash"
+            "Prefix the curl command: SIGNOZ_EXTERNAL_URL=https://... curl ... | bash"
     fi
 
     # Strip accidental trailing slash from the URL
@@ -287,6 +269,36 @@ configure() {
       fi
     fi
 
+    # ── Fly.io orgs (optional, 0 or more) ───────────────────────────────────────────
+    if [ "${STDIN_IS_TTY}" -eq 1 ]; then
+      echo ""
+      printf "  ── Fly.io Orgs (optional — press Enter on an empty slug to finish) ──
+"
+      while true; do
+        printf "  Org slug (Enter to finish): "
+        read -r _slug || _slug=""
+        [ -n "${_slug}" ] || break
+        printf "  Read-only API token for '%s': " "${_slug}"
+        read -rs _token || _token=""
+        echo ""
+        if [ -n "${_token}" ]; then
+          mkdir -p otel/orgs
+          printf '%s' "${_token}" > "otel/orgs/${_slug}.token"
+          chmod 600 "otel/orgs/${_slug}.token"
+          success "Org '${_slug}' added."
+        else
+          warn "No token provided — skipping '${_slug}'."
+        fi
+      done
+    elif [ -n "${FLY_ORG:-}" ] && [ -n "${FLY_API_TOKEN:-}" ]; then
+      mkdir -p otel/orgs
+      printf '%s' "${FLY_API_TOKEN}" > "otel/orgs/${FLY_ORG}.token"
+      chmod 600 "otel/orgs/${FLY_ORG}.token"
+      success "Org '${FLY_ORG}' added."
+    elif [ -n "${FLY_ORG:-}" ]; then
+      warn "FLY_ORG is set but FLY_API_TOKEN is missing — org skipped."
+    fi
+
     # ── Write secrets.env (Docker env_file format — raw, unquoted values) ────
     #    Raw values are intentional: Docker reads env_file without shell
     #    interpretation.  Auto-generated values (hex) never contain special
@@ -298,7 +310,6 @@ configure() {
       printf 'SIGNOZ_JWT_SECRET=%s\n'           "${jwt_secret}"
       printf 'SIGNOZ_TOKENIZER_JWT_SECRET=%s\n' "${jwt_secret}"
       printf 'INGESTION_KEY=%s\n'               "${ingestion_key}"
-      printf 'FLY_ORG=%s\n'                     "${fly_org}"
       printf 'SIGNOZ_GLOBAL_EXTERNAL__URL=%s\n' "${signoz_external_url}"
       printf '# Alertmanager SMTP\n'
       printf 'SIGNOZ_ALERTMANAGER_SIGNOZ_GLOBAL_SMTP__SMARTHOST=%s\n'      "${smtp_smarthost}"
@@ -318,38 +329,166 @@ configure() {
 
     # Publish to script-level globals
     INGESTION_KEY="${ingestion_key}"
-    _FLY_ORG="${fly_org}"
     _SIGNOZ_URL="${signoz_external_url}"
   fi
 
   # ── 6. Prepare the otel/ directory ─────────────────────────────────────────
   info "Preparing otel/ directory…"
-  mkdir -p otel/secret
+  mkdir -p otel/orgs
   chmod 777 otel/
   touch otel/signozcol-config.yaml
   chmod 666 otel/signozcol-config.yaml
   success "otel/ directory ready."
 
-  # ── 7. Write Fly API token to file ─────────────────────────────────────────
-  if [ -n "${fly_api_token:-}" ]; then
-    printf '%s' "${fly_api_token}" > otel/secret/fly_api_token
-    chmod 600 otel/secret/fly_api_token
-    success "Fly API token written to otel/secret/fly_api_token"
-  elif [ -f "otel/secret/fly_api_token" ]; then
-    success "otel/secret/fly_api_token already exists — keeping."
-  else
-    info "FLY_API_TOKEN not set — skipping token file (Fly metrics will be unavailable)."
-  fi
+  # ── 7. Generate otel-collector-config.yaml from template + current orgs ─────
+  regen_otel_config
+}
 
-  # ── 8. Generate otel-collector-config.yaml from template ───────────────────
-  if [ -f "otel-collector-config.yaml.template" ]; then
-    info "Generating otel-collector-config.yaml…"
-    sed "s/__FLY_ORG__/${_FLY_ORG}/g" \
-      otel-collector-config.yaml.template > otel-collector-config.yaml
-    success "otel-collector-config.yaml generated."
-  else
-    warn "otel-collector-config.yaml.template not found — skipping."
+# ══════════════════════════════════════════════════════════════════════════════
+# Fly.io org helpers — otel config generation & CLI subcommands
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Count *.token files in otel/orgs/
+count_orgs() {
+  local count=0
+  if [ -d "otel/orgs" ]; then
+    for _f in otel/orgs/*.token; do
+      [ -f "${_f}" ] && count=$((count + 1))
+    done
   fi
+  printf '%d' "${count}"
+}
+
+# Emit prometheus scrape_config YAML for every org token file
+gen_fly_scrape_configs() {
+  local orgs_dir="${1:-otel/orgs}"
+  [ -d "${orgs_dir}" ] || return 0
+  for _tf in "${orgs_dir}"/*.token; do
+    [ -f "${_tf}" ] || return 0   # no matches — glob literal returned
+    local _slug
+    _slug=$(basename "${_tf}" .token)
+    printf '        - job_name: fly-federate-%s\n'             "${_slug}"
+    printf '          scheme: https\n'
+    printf '          metrics_path: /prometheus/%s/federate\n' "${_slug}"
+    printf "          params:\n"
+    printf "            match[]: ['{__name__=~\"fly_.*\"}']\n"
+    printf '          static_configs:\n'
+    printf '            - targets: ["api.fly.io"]\n'
+    printf '          authorization:\n'
+    printf '            type: FlyV1\n'
+    printf '            credentials_file: /etc/otel/orgs/%s.token\n' "${_slug}"
+  done
+}
+
+# Regenerate otel-collector-config.yaml from template + current org token files
+regen_otel_config() {
+  local template="otel-collector-config.yaml.template"
+  local output="otel-collector-config.yaml"
+
+  [ -f "${template}" ] || { warn "Template not found — skipping otel config."; return 0; }
+
+  local _tmp
+  _tmp=$(mktemp)
+  gen_fly_scrape_configs "otel/orgs" > "${_tmp}"
+
+  awk -v configs_file="${_tmp}" '
+    /# __FLY_ORG_SCRAPE_CONFIGS__/ {
+      while ((getline line < configs_file) > 0) print line
+      close(configs_file)
+      next
+    }
+    { print }
+  ' "${template}" > "${output}"
+
+  rm -f "${_tmp}"
+  success "otel-collector-config.yaml updated ($(count_orgs) Fly.io org(s))."
+}
+
+# ── Subcommand: add-org ──────────────────────────────────────────────────────────────────
+cmd_add_org() {
+  [ -d "${SETUP_DIR}" ] || die "Setup directory not found: ${SETUP_DIR}"
+  cd "${SETUP_DIR}"
+
+  local slug="${1:-}"
+  local token="${2:-}"
+
+  if [ -z "${slug}" ]; then
+    printf "  Fly.io org slug: "
+    read -r slug || slug=""
+  fi
+  [ -n "${slug}" ] || die "Org slug is required."
+
+  if [ -z "${token}" ]; then
+    printf "  Read-only API token for '%s': " "${slug}"
+    read -rs token || token=""
+    echo ""
+  fi
+  [ -n "${token}" ] || die "API token is required."
+
+  mkdir -p otel/orgs
+  printf '%s' "${token}" > "otel/orgs/${slug}.token"
+  chmod 600 "otel/orgs/${slug}.token"
+  success "Org '${slug}' saved."
+
+  regen_otel_config
+
+  if docker ps --filter "name=signoz-otel-collector" --filter "status=running" -q 2>/dev/null | grep -q .; then
+    info "Restarting otel-collector to apply changes…"
+    docker compose restart otel-collector
+    success "otel-collector restarted."
+  else
+    info "otel-collector is not running — changes will apply on next start."
+  fi
+}
+
+# ── Subcommand: remove-org ──────────────────────────────────────────────────────────────
+cmd_remove_org() {
+  [ -d "${SETUP_DIR}" ] || die "Setup directory not found: ${SETUP_DIR}"
+  cd "${SETUP_DIR}"
+
+  local slug="${1:-}"
+
+  if [ -z "${slug}" ]; then
+    cmd_list_orgs
+    printf "\n  Org slug to remove: "
+    read -r slug || slug=""
+  fi
+  [ -n "${slug}" ] || die "Org slug is required."
+
+  local token_file="otel/orgs/${slug}.token"
+  [ -f "${token_file}" ] || die "No org '${slug}' found in otel/orgs/."
+
+  rm -f "${token_file}"
+  success "Org '${slug}' removed."
+
+  regen_otel_config
+
+  if docker ps --filter "name=signoz-otel-collector" --filter "status=running" -q 2>/dev/null | grep -q .; then
+    info "Restarting otel-collector to apply changes…"
+    docker compose restart otel-collector
+    success "otel-collector restarted."
+  else
+    info "otel-collector is not running — changes will apply on next start."
+  fi
+}
+
+# ── Subcommand: list-orgs ─────────────────────────────────────────────────────────────────
+cmd_list_orgs() {
+  [ -d "${SETUP_DIR}" ] || die "Setup directory not found: ${SETUP_DIR}"
+  cd "${SETUP_DIR}"
+
+  section "Configured Fly.io orgs"
+  if [ ! -d "otel/orgs" ]; then
+    info "No orgs directory — run: install.sh add-org"
+    return 0
+  fi
+  local found=0
+  for _tf in otel/orgs/*.token; do
+    [ -f "${_tf}" ] || continue
+    found=1
+    printf "  • %s\n" "$(basename "${_tf}" .token)"
+  done
+  [ "${found}" -eq 1 ] || info "No orgs configured — run: install.sh add-org"
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -389,16 +528,44 @@ print_access_info() {
 # Main
 # ══════════════════════════════════════════════════════════════════════════════
 main() {
-  printf "\n${BOLD}  ✦  SigNoz × Sprite Installer${NC}\n\n"
+  local cmd="${1:-install}"
 
-  check_sprite
-  install_docker
-  ensure_tools
-  start_dockerd
-  clone_or_update_repo
-  configure
-  start_compose
-  print_access_info
+  case "${cmd}" in
+    install)
+      printf "\n${BOLD}  ✔  SigNoz × Sprite Installer${NC}\n\n"
+      check_sprite
+      install_docker
+      ensure_tools
+      start_dockerd
+      clone_or_update_repo
+      configure
+      start_compose
+      print_access_info
+      ;;
+    add-org)
+      shift
+      section "Add Fly.io org"
+      cmd_add_org "$@"
+      ;;
+    remove-org)
+      shift
+      section "Remove Fly.io org"
+      cmd_remove_org "$@"
+      ;;
+    list-orgs)
+      cmd_list_orgs
+      ;;
+    regen-config)
+      [ -d "${SETUP_DIR}" ] || die "Setup directory not found: ${SETUP_DIR}"
+      cd "${SETUP_DIR}"
+      section "Regenerate otel config"
+      regen_otel_config
+      ;;
+    *)
+      die "Unknown command '${cmd}'." \
+          "Usage: install.sh [install|add-org|remove-org|list-orgs|regen-config]"
+      ;;
+  esac
 }
 
-main
+main "$@"
