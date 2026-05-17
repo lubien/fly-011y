@@ -1,0 +1,6 @@
+secrets.env
+otel/signozcol-config.yaml
+otel/signozcol-config.yaml.rollback
+otel/secret/
+nginx.conf
+otel-collector-config.yaml

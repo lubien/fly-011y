@@ -1,0 +1,364 @@
+connectors:
+  signozmeter:
+    metrics_flush_interval: 1h
+    dimensions:
+      - name: service.name
+      - name: deployment.environment
+      - name: host.name
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  httplogreceiver/json:
+    endpoint: 0.0.0.0:8082
+    source: json
+  prometheus:
+    config:
+      global:
+        scrape_interval: 60s
+      scrape_configs:
+        - job_name: fly-federate-__FLY_ORG__
+          scheme: https
+          metrics_path: /prometheus/__FLY_ORG__/federate
+          params:
+            match[]: ['{__name__=~"fly_.*"}'] # only Fly metrics
+          static_configs:
+            - targets: ["api.fly.io"]
+          authorization:
+            type: FlyV1
+            credentials_file: /etc/otel/secret/fly_api_token
+        - job_name: otel-collector
+          static_configs:
+            - targets:
+                - localhost:8888
+              labels:
+                job_name: otel-collector
+processors:
+  batch:
+    send_batch_size: 10000
+    send_batch_max_size: 11000
+    timeout: 10s
+  batch/meter:
+    send_batch_max_size: 25000
+    send_batch_size: 20000
+    timeout: 1s
+  resourcedetection:
+    # Using OTEL_RESOURCE_ATTRIBUTES envvar, env detector adds custom labels.
+    detectors: [env, system]
+    timeout: 2s
+  # ── Fly.io → SigNoz Hosts UI ──────────────────────────────────────────────
+
+  # 1. Only pass fly_instance_* into the transformation pipeline
+  filter/fly-instance-only:
+    error_mode: ignore
+    metrics:
+      include:
+        match_type: regexp
+        metric_names: ["^fly_instance_.*"]
+
+  # 2. Promote exported_instance/app/region from data-point labels → resource attributes.
+  #    The Prometheus receiver renames the Fly.io `instance` metric label to
+  #    `exported_instance` because `instance` is a reserved Prometheus meta-label
+  #    (the scrape target address). Any metric label named `instance` gets prefixed
+  #    with `exported_` automatically to avoid the conflict.
+  groupbyattrs/fly-promote-to-resource:
+    keys: [exported_instance, app, region]
+
+  # 3. Set host.name = exported_instance (the Fly.io VM machine ID).
+  resource/fly-set-hostname:
+    attributes:
+      - action: upsert
+        key: host.name
+        from_attribute: exported_instance
+
+  # 4. Create OTel system.* metrics from fly_instance_* (action: insert keeps originals)
+  metricstransform/fly-to-system:
+    transforms:
+      # ── Load averages (gauge → gauge, direct) ─────────────────────────────
+      # Note: delete_label is not a valid operation in this metricstransform version.
+      # The `minutes` label remains on the inserted metrics but causes no issues:
+      # experimental_match_labels ensures each named metric only contains data points
+      # for that specific minutes value, so there is no cross-contamination.
+      - include: fly_instance_load_average
+        match_type: strict
+        experimental_match_labels: { minutes: "15" }
+        action: insert
+        new_name: system.cpu.load_average.15m
+      - include: fly_instance_load_average
+        match_type: strict
+        experimental_match_labels: { minutes: "5" }
+        action: insert
+        new_name: system.cpu.load_average.5m
+      - include: fly_instance_load_average
+        match_type: strict
+        experimental_match_labels: { minutes: "1" }
+        action: insert
+        new_name: system.cpu.load_average.1m
+
+      # ── CPU time (counter, centiseconds → seconds × 0.01) ─────────────────
+      # mode → state, cpu_id → cpu
+      - include: fly_instance_cpu
+        match_type: strict
+        action: insert
+        new_name: system.cpu.time
+        operations:
+          - action: update_label
+            label: mode
+            new_label: state
+          - action: update_label
+            label: cpu_id
+            new_label: cpu
+          - action: experimental_scale_value
+            experimental_scale: 0.01
+
+      # Rename iowait → wait in system.cpu.time so SigNoz CPU wait % works.
+      # Must come after the insert above so system.cpu.time already exists.
+      # update_label doesn't support value renaming in this version.
+      # aggregate_label_values with a single input = rename (no actual aggregation).
+      - include: system.cpu.time
+        match_type: strict
+        action: update
+        operations:
+          - action: aggregate_label_values
+            label: state
+            aggregated_values: [iowait]
+            new_value: wait
+            aggregation_type: sum
+
+      # ── Memory (gauge, bytes) ──────────────────────────────────────────────
+      # state="used" uses active memory as proxy (see docs/fly-signoz-hosts-ui.md)
+      - include: fly_instance_memory_active
+        match_type: strict
+        action: insert
+        new_name: system.memory.usage
+        operations:
+          - action: add_label
+            new_label: state
+            new_value: used
+      - include: fly_instance_memory_mem_free
+        match_type: strict
+        action: insert
+        new_name: system.memory.usage
+        operations:
+          - action: add_label
+            new_label: state
+            new_value: free
+      - include: fly_instance_memory_cached
+        match_type: strict
+        action: insert
+        new_name: system.memory.usage
+        operations:
+          - action: add_label
+            new_label: state
+            new_value: cached
+      - include: fly_instance_memory_buffers
+        match_type: strict
+        action: insert
+        new_name: system.memory.usage
+        operations:
+          - action: add_label
+            new_label: state
+            new_value: buffered
+      # inactive + slab fill out the denominator so memory% ≈ active/total
+      - include: fly_instance_memory_inactive
+        match_type: strict
+        action: insert
+        new_name: system.memory.usage
+        operations:
+          - action: add_label
+            new_label: state
+            new_value: inactive
+      - include: fly_instance_memory_slab
+        match_type: strict
+        action: insert
+        new_name: system.memory.usage
+        operations:
+          - action: add_label
+            new_label: state
+            new_value: slab
+
+      # ── Network I/O (counter, bytes) ───────────────────────────────────────
+      - include: fly_instance_net_recv_bytes
+        match_type: strict
+        action: insert
+        new_name: system.network.io
+        operations:
+          - action: add_label
+            new_label: direction
+            new_value: receive
+          - action: update_label
+            label: device
+            new_label: interface
+      - include: fly_instance_net_sent_bytes
+        match_type: strict
+        action: insert
+        new_name: system.network.io
+        operations:
+          - action: add_label
+            new_label: direction
+            new_value: transmit
+          - action: update_label
+            label: device
+            new_label: interface
+
+      # ── Disk I/O (counter, sectors × 512 → bytes) ─────────────────────────
+      - include: fly_instance_disk_sectors_read
+        match_type: strict
+        action: insert
+        new_name: system.disk.io
+        operations:
+          - action: add_label
+            new_label: direction
+            new_value: read
+          - action: experimental_scale_value
+            experimental_scale: 512
+      - include: fly_instance_disk_sectors_written
+        match_type: strict
+        action: insert
+        new_name: system.disk.io
+        operations:
+          - action: add_label
+            new_label: direction
+            new_value: write
+          - action: experimental_scale_value
+            experimental_scale: 512
+
+  # 5. Copy host.name from resource attributes → data-point attributes.
+  #    SigNoz queries host.name as AttributeKeyTypeResource (resource attr) AND as a
+  #    plain label (data-point attr). Having it in both guarantees discovery works.
+  #    resource.attributes[key] is valid in OTTL datapoint context.
+  transform/fly-copy-hostname-to-dp:
+    error_mode: ignore
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(attributes["host.name"], resource.attributes["host.name"])
+
+  # 6. Drop the fly_instance_* originals; keep only system.* for the Hosts UI pipeline
+  filter/otel-system-only:
+    error_mode: ignore
+    metrics:
+      include:
+        match_type: regexp
+        metric_names: ["^system\\..*"]
+
+  # ── End Fly.io → SigNoz Hosts UI ──────────────────────────────────────────
+
+  signozspanmetrics/delta:
+    metrics_exporter: signozclickhousemetrics
+    metrics_flush_interval: 60s
+    latency_histogram_buckets:
+      [
+        100us,
+        1ms,
+        2ms,
+        6ms,
+        10ms,
+        50ms,
+        100ms,
+        250ms,
+        500ms,
+        1000ms,
+        1400ms,
+        2000ms,
+        5s,
+        10s,
+        20s,
+        40s,
+        60s,
+      ]
+    dimensions_cache_size: 100000
+    aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
+    enable_exp_histogram: true
+    dimensions:
+      - name: service.namespace
+        default: default
+      - name: deployment.environment
+        default: default
+      # This is added to ensure the uniqueness of the timeseries
+      # Otherwise, identical timeseries produced by multiple replicas of
+      # collectors result in incorrect APM metrics
+      - name: signoz.collector.id
+      - name: service.version
+      - name: browser.platform
+      - name: browser.mobile
+      - name: k8s.cluster.name
+      - name: k8s.node.name
+      - name: k8s.namespace.name
+      - name: host.name
+      - name: host.type
+      - name: container.name
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  pprof:
+    endpoint: 0.0.0.0:1777
+# Force IPv4 for all ClickHouse connections.
+# On this host `localhost` resolves to the IPv6 address [fdf::1] which causes
+# i/o timeouts because ClickHouse only listens on 127.0.0.1 (IPv4).
+exporters:
+  clickhousetraces:
+    datasource: tcp://127.0.0.1:9000/signoz_traces
+    low_cardinal_exception_grouping: ${env:LOW_CARDINAL_EXCEPTION_GROUPING}
+    use_new_schema: true
+  signozclickhousemetrics:
+    dsn: tcp://127.0.0.1:9000/signoz_metrics
+  clickhouselogsexporter:
+    dsn: tcp://127.0.0.1:9000/signoz_logs
+    timeout: 10s
+    use_new_schema: true
+  signozclickhousemeter:
+    dsn: tcp://127.0.0.1:9000/signoz_meter
+    timeout: 45s
+    sending_queue:
+      enabled: false
+  metadataexporter:
+    cache:
+      provider: in_memory
+    dsn: tcp://127.0.0.1:9000/signoz_metadata
+    enabled: true
+    timeout: 45s
+service:
+  telemetry:
+    logs:
+      encoding: json
+  extensions:
+    - health_check
+    - pprof
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [signozspanmetrics/delta, batch]
+      exporters: [clickhousetraces, metadataexporter, signozmeter]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
+    metrics/prometheus:
+      receivers: [prometheus]
+      processors: [batch]
+      exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
+    # Fly.io VMs as SigNoz hosts — transforms fly_instance_* → system.* OTel names
+    # The prometheus receiver fans out to both this pipeline and metrics/prometheus above
+    metrics/fly-as-host:
+      receivers: [prometheus]
+      processors:
+        - filter/fly-instance-only
+        - groupbyattrs/fly-promote-to-resource
+        - resource/fly-set-hostname
+        - metricstransform/fly-to-system
+        - transform/fly-copy-hostname-to-dp
+        - filter/otel-system-only
+        - batch
+      exporters: [signozclickhousemetrics, metadataexporter]
+    logs:
+      receivers: [otlp, httplogreceiver/json]
+      processors: [batch]
+      exporters: [clickhouselogsexporter, metadataexporter, signozmeter]
+    metrics/meter:
+      receivers: [signozmeter]
+      processors: [batch/meter]
+      exporters: [signozclickhousemeter]
