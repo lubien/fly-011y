@@ -102,6 +102,14 @@ def api_put(path, payload):
     return _json("PUT", path, payload, headers=HEADERS)
 
 
+# ── Notification channels ──────────────────────────────────────────────────────────────────
+def fetch_channels() -> list[str]:
+    """Return all configured notification channel names."""
+    resp = api_get("/api/v1/channels")
+    channels = resp.get("data", []) or []
+    return [c["name"] for c in channels if c.get("name")]
+
+
 # ── Alert definitions ─────────────────────────────────────────────────────────
 def make_promql_alert(
     name,
@@ -113,6 +121,7 @@ def make_promql_alert(
     target,
     match_type="at_least_once",
     absent=False,
+    preferred_channels=None,
 ):
     """Build a PromQL-based alert rule (PostableRule format, version v5)."""
     condition = {
@@ -155,6 +164,7 @@ def make_promql_alert(
             "description": description,
             "summary": name,
         },
+        "preferredChannels": preferred_channels or [],
         "disabled": False,
     }
 
@@ -326,17 +336,30 @@ def main():
     print(f"Target: {SIGNOZ_URL}")
     print(f"Provisioning {len(ALERTS)} pipeline health alert(s)\n")
 
+    # Channels must be set on every rule or SigNoz rejects the request.
+    channels = fetch_channels()
+    if not channels:
+        print(
+            "ERROR: no notification channels found.\n"
+            "Create one first in SigNoz → Settings → Alert Channels,"
+            " then re-run this script.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    print(f"Found {len(channels)} channel(s): {', '.join(channels)}")
+
+    # Inject channels into every alert definition.
+    alerts = [{**alert, "preferredChannels": channels} for alert in ALERTS]
+
     existing = fetch_existing()
     print(f"SigNoz currently has {len(existing)} alert rule(s)\n")
 
-    for alert in ALERTS:
+    for alert in alerts:
         status = upsert_alert(alert, existing)
         sev = alert["labels"].get("severity", "?")
         print(f"  ✓  [{sev}] {status}")
 
-    print(f"\nDone.")
-    print("\nNote: alerts fire but won't notify until you configure a notification")
-    print("channel in SigNoz → Settings → Alert Channels and set preferredChannels.")
+    print("\nDone.")
 
 
 if __name__ == "__main__":
