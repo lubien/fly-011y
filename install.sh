@@ -26,7 +26,7 @@ set -euo pipefail
 REPO_URL="https://github.com/lubien/fly-011y.git"
 INSTALL_DIR="/home/sprite/fly-o11y"
 SETUP_DIR="${INSTALL_DIR}/setup"
-LOG_SHIPPER_DIR="${INSTALL_DIR}/log-shipper"
+LOG_SHIPPER_DIR="${INSTALL_DIR}/fly-o11y-log-shipper"
 
 # ─── Terminal detection ────────────────────────────────────────────────────────
 # Used to decide between interactive prompts and env-var-only mode.
