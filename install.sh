@@ -22,7 +22,8 @@
 # ────────────────────── SigNoz Provisioning ───────────────────
 #
 #   install.sh provision-dashboards        upsert all dashboards/*.json
-#   install.sh provision-pipeline-alerts   provision pipeline health alerts
+#   install.sh provision-alerts            provision all 40 Fly.io alert rules
+#   install.sh provision-pipeline-alerts   provision only the 4 pipeline health alerts
 #   install.sh provision-elixir-pipeline   push Elixir/Phoenix log pipeline
 
 set -euo pipefail
@@ -876,6 +877,13 @@ main() {
       [ -f "${_script}" ] || die "Script not found: ${_script}"
       command -v python3 &>/dev/null || die "python3 is required but not installed."
       section "Provision dashboards"
+      python3 "${_script}"
+      ;;
+    provision-alerts)
+      local _script="${INSTALL_DIR}/scripts/provision_alerts.py"
+      [ -f "${_script}" ] || die "Script not found: ${_script}"
+      command -v python3 &>/dev/null || die "python3 is required but not installed."
+      section "Provision all alerts"
       python3 "${_script}"
       ;;
     provision-pipeline-alerts)
