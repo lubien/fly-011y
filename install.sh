@@ -10,8 +10,6 @@
 # On older sprites that don't expose sprite_url, supply it explicitly:
 #   SIGNOZ_EXTERNAL_URL=https://NAME.sprites.app curl ... | bash
 #
-# Optionally seed one Fly.io org during install (add more later with add-org):
-#   FLY_ORG=myorg FLY_API_TOKEN=FlyV1_... curl ... | bash
 #
 # Post-install org management:
 #   install.sh add-org          — add a Fly.io org (Prometheus metrics)
@@ -289,36 +287,6 @@ configure() {
       fi
     fi
 
-    # ── Fly.io orgs (optional, 0 or more) ───────────────────────────────────────────
-    if [ "${STDIN_IS_TTY}" -eq 1 ]; then
-      echo ""
-      printf "  ── Fly.io Orgs (optional — press Enter on an empty slug to finish) ──
-"
-      while true; do
-        printf "  Org slug (Enter to finish): "
-        read -r _slug || _slug=""
-        [ -n "${_slug}" ] || break
-        printf "  Read-only API token for '%s': " "${_slug}"
-        read -rs _token || _token=""
-        echo ""
-        if [ -n "${_token}" ]; then
-          mkdir -p otel/orgs
-          printf '%s' "${_token}" > "otel/orgs/${_slug}.token"
-          chmod 600 "otel/orgs/${_slug}.token"
-          success "Org '${_slug}' added."
-        else
-          warn "No token provided — skipping '${_slug}'."
-        fi
-      done
-    elif [ -n "${FLY_ORG:-}" ] && [ -n "${FLY_API_TOKEN:-}" ]; then
-      mkdir -p otel/orgs
-      printf '%s' "${FLY_API_TOKEN}" > "otel/orgs/${FLY_ORG}.token"
-      chmod 600 "otel/orgs/${FLY_ORG}.token"
-      success "Org '${FLY_ORG}' added."
-    elif [ -n "${FLY_ORG:-}" ]; then
-      warn "FLY_ORG is set but FLY_API_TOKEN is missing — org skipped."
-    fi
-
     # ── Write secrets.env (Docker env_file format — raw, unquoted values) ────
     #    Raw values are intentional: Docker reads env_file without shell
     #    interpretation.  Auto-generated values (hex) never contain special
@@ -429,26 +397,51 @@ cmd_add_org() {
   [ -d "${SETUP_DIR}" ] || die "Setup directory not found: ${SETUP_DIR}"
   cd "${SETUP_DIR}"
 
+  install_flyctl
+  ensure_fly_login
+
   local slug="${1:-}"
-  local token="${2:-}"
 
   if [ -z "${slug}" ]; then
-    printf "  Fly.io org slug: "
-    read -r slug || slug=""
-  fi
-  [ -n "${slug}" ] || die "Org slug is required."
+    info "Fetching your Fly.io orgs…"
+    local org_slugs=() org_names=()
+    while IFS='|' read -r _slug _name; do
+      [ -n "${_slug}" ] || continue
+      [ ! -f "otel/orgs/${_slug}.token" ] || continue  # skip already configured
+      org_slugs+=("${_slug}")
+      org_names+=("${_name}")
+    done < <(list_fly_org_pairs)
 
-  if [ -z "${token}" ]; then
-    printf "  Read-only API token for '%s': " "${slug}"
-    read -rs token || token=""
+    if [ "${#org_slugs[@]}" -eq 0 ]; then
+      info "All orgs are already configured."
+      return 0
+    fi
+
     echo ""
+    local _i
+    for _i in $(seq 0 $((${#org_slugs[@]} - 1))); do
+      printf "  [%d] %s  (%s)\n" "$((_i+1))" "${org_names[_i]}" "${org_slugs[_i]}"
+    done
+    echo ""
+    printf "  Select org: "
+    local _sel; read -r _sel || _sel=""
+    local _n=$((_sel - 1))
+    if [ "${_n}" -ge 0 ] && [ "${_n}" -lt "${#org_slugs[@]}" ]; then
+      slug="${org_slugs[_n]}"
+    else
+      die "Invalid selection '${_sel}'."
+    fi
   fi
-  [ -n "${token}" ] || die "API token is required."
+
+  info "Generating read-only Prometheus token for '${slug}'…"
+  local token
+  token=$(fly_cmd tokens create readonly --name "fly-o11y-prometheus" --org "${slug}") || \
+    die "Failed to generate token for '${slug}'."
 
   mkdir -p otel/orgs
   printf '%s' "${token}" > "otel/orgs/${slug}.token"
   chmod 600 "otel/orgs/${slug}.token"
-  success "Org '${slug}' saved."
+  success "Org '${slug}' added."
 
   regen_otel_config
 
@@ -716,6 +709,79 @@ cmd_add_log_shipper() {
   deploy_log_shipper "${org_slug}" "${ingestion_url}" "${ingestion_key}"
 }
 
+# Orchestrate Prometheus metrics org setup after log shippers
+setup_prometheus_orgs() {
+  [ "${STDIN_IS_TTY}" -eq 1 ] || return 0
+
+  section "Fly.io Prometheus metrics (optional)"
+  printf "  Scrape Prometheus metrics from Fly.io orgs? (y/N): "
+  local _ans; read -r _ans || _ans=""
+  [ "${_ans}" = "y" ] || [ "${_ans}" = "Y" ] || return 0
+
+  # flyctl is already installed + logged in if the user went through setup_log_shippers;
+  # install_flyctl / ensure_fly_login are idempotent so safe to call again.
+  install_flyctl
+  ensure_fly_login
+
+  cd "${SETUP_DIR}"
+
+  info "Fetching your Fly.io orgs…"
+  local org_slugs=() org_names=()
+  while IFS='|' read -r _slug _name; do
+    [ -n "${_slug}" ] || continue
+    [ ! -f "otel/orgs/${_slug}.token" ] || continue  # skip already configured
+    org_slugs+=("${_slug}")
+    org_names+=("${_name}")
+  done < <(list_fly_org_pairs)
+
+  if [ "${#org_slugs[@]}" -eq 0 ]; then
+    info "All orgs already have Prometheus tokens configured."
+    return 0
+  fi
+
+  echo ""
+  local _i
+  for _i in $(seq 0 $((${#org_slugs[@]} - 1))); do
+    printf "  [%d] %s  (%s)\n" "$((_i+1))" "${org_names[_i]}" "${org_slugs[_i]}"
+  done
+  echo ""
+  printf "  Select orgs (comma-separated numbers, Enter to skip): "
+  local selection; read -r selection || selection=""
+  [ -n "${selection}" ] || return 0
+
+  local _any_added=0
+  IFS=',' read -ra _indices <<< "${selection}"
+  for _idx in "${_indices[@]}"; do
+    _idx=$(printf '%s' "${_idx}" | tr -d ' ')
+    local _n=$((_idx - 1))
+    if [ "${_n}" -ge 0 ] && [ "${_n}" -lt "${#org_slugs[@]}" ]; then
+      local _slug="${org_slugs[_n]}"
+      info "Generating read-only Prometheus token for '${_slug}'…"
+      local _token
+      _token=$(fly_cmd tokens create readonly --name "fly-o11y-prometheus" --org "${_slug}") || {
+        warn "Failed to generate token for '${_slug}' — skipping."
+        continue
+      }
+      mkdir -p otel/orgs
+      printf '%s' "${_token}" > "otel/orgs/${_slug}.token"
+      chmod 600 "otel/orgs/${_slug}.token"
+      success "Org '${_slug}' added."
+      _any_added=1
+    else
+      warn "Invalid selection '${_idx}' — skipping."
+    fi
+  done
+
+  if [ "${_any_added}" -eq 1 ]; then
+    regen_otel_config
+    if docker ps --filter "name=signoz-otel-collector" --filter "status=running" -q 2>/dev/null | grep -q .; then
+      info "Restarting otel-collector to apply changes…"
+      docker compose restart otel-collector
+      success "otel-collector restarted."
+    fi
+  fi
+}
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Step 10 — Start Docker Compose
 # ══════════════════════════════════════════════════════════════════════════════
@@ -767,6 +833,7 @@ main() {
       start_compose
       print_access_info
       setup_log_shippers
+      setup_prometheus_orgs
       ;;
     add-org)
       shift
