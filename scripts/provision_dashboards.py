@@ -104,6 +104,12 @@ def fetch_existing() -> dict[str, dict]:
     """Return a mapping of title → existing dashboard (with uuid)."""
     resp = api_get("/api/v1/dashboards")
     dashboards = resp.get("data", []) or []
+    if dashboards:
+        first = dashboards[0]
+        print(f"  [debug] first dashboard top-level keys: {sorted(first.keys())}")
+        print(
+            f"  [debug] first dashboard.data keys: {sorted(first.get('data', {}).keys())}"
+        )
     return {d.get("data", {}).get("title", ""): d for d in dashboards}
 
 
