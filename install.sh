@@ -18,7 +18,8 @@
 #   install.sh remove-org       — remove a Fly.io org
 #   install.sh list-orgs        — list configured orgs
 #   install.sh regen-config     — regenerate otel config from current orgs
-#   install.sh add-log-shipper  — deploy a Fly.io log shipper for an org
+#   install.sh add-log-shipper           — deploy a Fly.io log shipper for an org
+#   install.sh provision-elixir-pipeline  — push Elixir/Phoenix log parsing pipeline to SigNoz
 
 set -euo pipefail
 
@@ -781,9 +782,16 @@ main() {
       section "Add Fly.io log shipper"
       cmd_add_log_shipper "$@"
       ;;
+    provision-elixir-pipeline)
+      local _script="${INSTALL_DIR}/scripts/provision_elixir_pipelines.py"
+      [ -f "${_script}" ] || die "Script not found: ${_script}"
+      command -v python3 &>/dev/null || die "python3 is required but not installed."
+      section "Provision Elixir log pipeline"
+      SETUP_DIR="${SETUP_DIR}" python3 "${_script}"
+      ;;
     *)
       die "Unknown command '${cmd}'." \
-          "Usage: install.sh [install|add-org|remove-org|list-orgs|regen-config|add-log-shipper]"
+          "Usage: install.sh [install|add-org|remove-org|list-orgs|regen-config|add-log-shipper|provision-elixir-pipeline]"
       ;;
   esac
 }
