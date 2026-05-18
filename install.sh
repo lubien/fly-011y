@@ -1,25 +1,29 @@
 #!/usr/bin/env bash
 # install.sh — Set up SigNoz on a Sprite sandbox (sprites.dev)
 #
-# One-liner install:
+# ─────────────────────── Installation ────────────────────────
+#
 #   curl https://raw.githubusercontent.com/lubien/fly-011y/main/install.sh | bash
 #
-# When running non-interactively (pipe / CI):
-#   curl https://raw.githubusercontent.com/lubien/fly-011y/main/install.sh | bash
+#   On older sprites that don’t expose sprite_url in sprite-env info:
+#     SIGNOZ_EXTERNAL_URL=https://NAME.sprites.app curl ... | bash
 #
-# On older sprites that don't expose sprite_url, supply it explicitly:
-#   SIGNOZ_EXTERNAL_URL=https://NAME.sprites.app curl ... | bash
+# ────────────────────── Fly.io Orgs (Prometheus metrics) ───────────
 #
+#   install.sh add-org          add a Fly.io org
+#   install.sh remove-org       remove a Fly.io org
+#   install.sh list-orgs        list configured orgs
+#   install.sh regen-config     regenerate otel config from current orgs
 #
-# Post-install org management:
-#   install.sh add-org          — add a Fly.io org (Prometheus metrics)
-#   install.sh remove-org       — remove a Fly.io org
-#   install.sh list-orgs        — list configured orgs
-#   install.sh regen-config     — regenerate otel config from current orgs
-#   install.sh add-log-shipper           — deploy a Fly.io log shipper for an org
-#   install.sh provision-elixir-pipeline  — push Elixir/Phoenix log parsing pipeline to SigNoz
-#   install.sh provision-dashboards        — upsert all dashboards/*.json into SigNoz
-#   install.sh provision-pipeline-alerts    — provision critical pipeline health alerts
+# ──────────────────────── Log Shipping ─────────────────────────
+#
+#   install.sh add-log-shipper  deploy a Fly.io log shipper for an org
+#
+# ────────────────────── SigNoz Provisioning ───────────────────
+#
+#   install.sh provision-dashboards        upsert all dashboards/*.json
+#   install.sh provision-pipeline-alerts   provision pipeline health alerts
+#   install.sh provision-elixir-pipeline   push Elixir/Phoenix log pipeline
 
 set -euo pipefail
 

@@ -101,15 +101,10 @@ def api_put(path: str, payload: dict) -> dict:
 
 # ── Dashboard upsert ──────────────────────────────────────────────────────────
 def fetch_existing() -> dict[str, dict]:
-    """Return a mapping of title → existing dashboard (with uuid)."""
+    """Return a mapping of title → existing dashboard.
+    GET /api/v1/dashboards returns [{id, data: {title, ...}, locked, ...}]"""
     resp = api_get("/api/v1/dashboards")
     dashboards = resp.get("data", []) or []
-    if dashboards:
-        first = dashboards[0]
-        print(f"  [debug] first dashboard top-level keys: {sorted(first.keys())}")
-        print(
-            f"  [debug] first dashboard.data keys: {sorted(first.get('data', {}).keys())}"
-        )
     return {d.get("data", {}).get("title", ""): d for d in dashboards}
 
 
@@ -118,8 +113,16 @@ def upsert_dashboard(definition: dict, existing_by_title: dict[str, dict]) -> st
     existing = existing_by_title.get(title)
 
     if existing:
-        uuid = existing.get("uuid") or existing.get("data", {}).get("uuid", "")
-        api_put(f"/api/v1/dashboards/{uuid}", definition)
+        # SigNoz v0.124+ uses "id" (not "uuid") as the dashboard identifier
+        dashboard_id = existing.get("id") or existing.get("uuid") or ""
+        if not dashboard_id:
+            print(
+                f"  WARN  could not find id for {title!r} — will create instead",
+                file=sys.stderr,
+            )
+            api_post("/api/v1/dashboards", definition)
+            return f"created  {title!r} (id missing in existing)"
+        api_put(f"/api/v1/dashboards/{dashboard_id}", definition)
         return f"updated  {title!r}"
     else:
         api_post("/api/v1/dashboards", definition)
