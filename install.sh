@@ -441,7 +441,7 @@ cmd_add_org() {
 
   mkdir -p otel/orgs
   printf '%s' "${token}" > "otel/orgs/${slug}.token"
-  chmod 600 "otel/orgs/${slug}.token"
+  chmod 644 "otel/orgs/${slug}.token"
   success "Org '${slug}' added."
 
   regen_otel_config
@@ -766,7 +766,7 @@ setup_prometheus_orgs() {
       _token="${_token#FlyV1 }"  # strip scheme prefix — Prometheus authorization.type adds it back
       mkdir -p otel/orgs
       printf '%s' "${_token}" > "otel/orgs/${_slug}.token"
-      chmod 600 "otel/orgs/${_slug}.token"
+      chmod 644 "otel/orgs/${_slug}.token"
       success "Org '${_slug}' added."
       _any_added=1
     else
