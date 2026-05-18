@@ -67,8 +67,9 @@ retry_max_duration_secs = 10
 signoz-ingestion-key = "${SIGNOZ_INGESTION_KEY}"
 
 # Buffer to disk so logs survive SigNoz restarts / brief outages.
-# 256 MB cap; drop_newest under pressure rather than blocking the pipeline.
+# 512 MiB cap; Vector's minimum is 268435488 bytes so we use 2x that.
+# drop_newest under pressure rather than blocking the pipeline.
 [sinks.signoz.buffer]
 type = "disk"
-max_size = 268435456
+max_size = 536870912
 when_full = "drop_newest"
