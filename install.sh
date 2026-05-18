@@ -14,10 +14,11 @@
 #   FLY_ORG=myorg FLY_API_TOKEN=FlyV1_... curl ... | bash
 #
 # Post-install org management:
-#   install.sh add-org      — add a Fly.io org
-#   install.sh remove-org   — remove a Fly.io org
-#   install.sh list-orgs    — list configured orgs
-#   install.sh regen-config — regenerate otel config from current orgs
+#   install.sh add-org          — add a Fly.io org (Prometheus metrics)
+#   install.sh remove-org       — remove a Fly.io org
+#   install.sh list-orgs        — list configured orgs
+#   install.sh regen-config     — regenerate otel config from current orgs
+#   install.sh add-log-shipper  — deploy a Fly.io log shipper for an org
 
 set -euo pipefail
 
@@ -25,6 +26,7 @@ set -euo pipefail
 REPO_URL="https://github.com/lubien/fly-011y.git"
 INSTALL_DIR="/home/sprite/fly-o11y"
 SETUP_DIR="${INSTALL_DIR}/setup"
+LOG_SHIPPER_DIR="${INSTALL_DIR}/log-shipper"
 
 # ─── Terminal detection ────────────────────────────────────────────────────────
 # Used to decide between interactive prompts and env-var-only mode.
@@ -509,6 +511,201 @@ cmd_list_orgs() {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Fly.io log shipping — flyctl, auth, deploy, subcommands
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Run fly or flyctl — whichever is in PATH (also checks ~/.fly/bin after install)
+fly_cmd() {
+  if command -v fly &>/dev/null; then
+    fly "$@"
+  elif command -v flyctl &>/dev/null; then
+    flyctl "$@"
+  else
+    die "flyctl not found. Run: install.sh add-log-shipper  (it will install it)"
+  fi
+}
+
+# Install flyctl if neither fly nor flyctl is available
+install_flyctl() {
+  if command -v fly &>/dev/null || command -v flyctl &>/dev/null; then
+    return 0
+  fi
+
+  info "Installing flyctl…"
+  curl -fsSL https://fly.io/install.sh | sh
+
+  # The installer drops binaries in ~/.fly/bin; add to PATH for this session
+  export PATH="${HOME}/.fly/bin:${PATH}"
+
+  command -v fly &>/dev/null || command -v flyctl &>/dev/null || \
+    die "flyctl install failed. Install manually: https://fly.io/docs/hands-on/install-flyctl/"
+
+  success "flyctl installed: $(fly_cmd version --json 2>/dev/null | grep -o '\"Version\":\"[^\"]*\"' | cut -d'"' -f4 || fly_cmd version 2>&1 | head -1)"
+}
+
+# Ensure the user is authenticated with flyctl; open browser login if not
+ensure_fly_login() {
+  section "Fly.io authentication"
+
+  local email
+  if email=$(fly_cmd auth whoami 2>/dev/null) && [ -n "${email}" ]; then
+    success "Logged in as: ${email}"
+    return 0
+  fi
+
+  info "Not logged in — opening Fly.io auth…"
+  fly_cmd auth login
+
+  # Verify the login succeeded
+  email=$(fly_cmd auth whoami 2>/dev/null) || \
+    die "Fly.io authentication failed. Run 'fly auth login' and try again."
+  success "Logged in as: ${email}"
+}
+
+# Print \"slug|Name\" pairs for every Fly.io org the authed user belongs to
+list_fly_org_pairs() {
+  fly_cmd orgs list --json 2>/dev/null \
+    | grep -o '"[^"]*": "[^"]*"' \
+    | sed 's/"\([^"]*\)": "\([^"]*\)"/\1|\2/'
+}
+
+# Deploy (or redeploy) a log-shipper Fly app for a single org
+deploy_log_shipper() {
+  local org_slug="${1}"
+  local ingestion_url="${2}"
+  local ingestion_key="${3}"
+
+  [ -d "${LOG_SHIPPER_DIR}" ] || \
+    die "Log shipper directory not found: ${LOG_SHIPPER_DIR}"
+  cd "${LOG_SHIPPER_DIR}"
+
+  local toml_file="fly.${org_slug}.toml"
+
+  if [ -f "${toml_file}" ]; then
+    warn "${toml_file} already exists — a shipper for '${org_slug}' may already be deployed."
+    printf "  Redeploy? (y/N): "
+    local _ans; read -r _ans || _ans=""
+    [ "${_ans}" = "y" ] || [ "${_ans}" = "Y" ] || return 0
+  fi
+
+  cp "fly.template.toml" "${toml_file}"
+  success "Created ${toml_file}."
+
+  info "Generating read-only access token for org '${org_slug}'…"
+  local access_token
+  access_token=$(fly_cmd tokens create readonly --name "fly-o11y" --org "${org_slug}") || \
+    die "Failed to create access token for org '${org_slug}'."
+
+  info "Deploying log shipper for '${org_slug}' (this may take a few minutes)…"
+  fly_cmd launch \
+    -c "${toml_file}" \
+    --copy-config \
+    --internal-port 8686 \
+    --secret "ORG=${org_slug}" \
+    --secret "ACCESS_TOKEN=${access_token}" \
+    --secret "SIGNOZ_INGESTION_URL=${ingestion_url}" \
+    --secret "SIGNOZ_INGESTION_KEY=${ingestion_key}" \
+    --org "${org_slug}" \
+    --no-public-ips \
+    --yes
+
+  success "Log shipper deployed for org '${org_slug}'."
+}
+
+# Orchestrate log shipper setup at the end of the main install flow
+setup_log_shippers() {
+  # Only makes sense interactively
+  [ "${STDIN_IS_TTY}" -eq 1 ] || return 0
+
+  local secrets_env="${SETUP_DIR}/secrets.env"
+  local ingestion_key ingestion_url
+  ingestion_key=$(env_get "${secrets_env}" "INGESTION_KEY")
+  ingestion_url="$(env_get "${secrets_env}" "SIGNOZ_GLOBAL_EXTERNAL__URL")/logs/vector"
+
+  section "Log shipping (optional)"
+  printf "  Ship logs from Fly.io orgs to SigNoz? (y/N): "
+  local _ans; read -r _ans || _ans=""
+  [ "${_ans}" = "y" ] || [ "${_ans}" = "Y" ] || return 0
+
+  install_flyctl
+  ensure_fly_login
+
+  # Build org list
+  info "Fetching your Fly.io orgs…"
+  local org_slugs=() org_names=()
+  while IFS='|' read -r _slug _name; do
+    [ -n "${_slug}" ] || continue
+    org_slugs+=("${_slug}")
+    org_names+=("${_name}")
+  done < <(list_fly_org_pairs)
+  [ "${#org_slugs[@]}" -gt 0 ] || die "No Fly.io orgs found."
+
+  echo ""
+  local _i
+  for _i in $(seq 0 $((${#org_slugs[@]} - 1))); do
+    printf "  [%d] %s  (%s)\n" "$((_i+1))" "${org_names[_i]}" "${org_slugs[_i]}"
+  done
+  echo ""
+  printf "  Select orgs (comma-separated numbers, Enter to skip): "
+  local selection; read -r selection || selection=""
+  [ -n "${selection}" ] || return 0
+
+  IFS=',' read -ra _indices <<< "${selection}"
+  for _idx in "${_indices[@]}"; do
+    _idx=$(printf '%s' "${_idx}" | tr -d ' ')
+    local _n=$((_idx - 1))
+    if [ "${_n}" -ge 0 ] && [ "${_n}" -lt "${#org_slugs[@]}" ]; then
+      deploy_log_shipper "${org_slugs[_n]}" "${ingestion_url}" "${ingestion_key}"
+    else
+      warn "Invalid selection '${_idx}' — skipping."
+    fi
+  done
+}
+
+# ── Subcommand: add-log-shipper ───────────────────────────────────────────────────────────
+cmd_add_log_shipper() {
+  local secrets_env="${SETUP_DIR}/secrets.env"
+  [ -f "${secrets_env}" ] || die "secrets.env not found — run install first."
+
+  local ingestion_key ingestion_url
+  ingestion_key=$(env_get "${secrets_env}" "INGESTION_KEY")
+  ingestion_url="$(env_get "${secrets_env}" "SIGNOZ_GLOBAL_EXTERNAL__URL")/logs/vector"
+
+  install_flyctl
+  ensure_fly_login
+
+  local org_slug="${1:-}"
+
+  if [ -z "${org_slug}" ]; then
+    info "Fetching your Fly.io orgs…"
+    local org_slugs=() org_names=()
+    while IFS='|' read -r _slug _name; do
+      [ -n "${_slug}" ] || continue
+      org_slugs+=("${_slug}")
+      org_names+=("${_name}")
+    done < <(list_fly_org_pairs)
+    [ "${#org_slugs[@]}" -gt 0 ] || die "No Fly.io orgs found."
+
+    echo ""
+    local _i
+    for _i in $(seq 0 $((${#org_slugs[@]} - 1))); do
+      printf "  [%d] %s  (%s)\n" "$((_i+1))" "${org_names[_i]}" "${org_slugs[_i]}"
+    done
+    echo ""
+    printf "  Select org: "
+    local _sel; read -r _sel || _sel=""
+    local _n=$((_sel - 1))
+    if [ "${_n}" -ge 0 ] && [ "${_n}" -lt "${#org_slugs[@]}" ]; then
+      org_slug="${org_slugs[_n]}"
+    else
+      die "Invalid selection '${_sel}'."
+    fi
+  fi
+
+  deploy_log_shipper "${org_slug}" "${ingestion_url}" "${ingestion_key}"
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Step 10 — Start Docker Compose
 # ══════════════════════════════════════════════════════════════════════════════
 start_compose() {
@@ -558,6 +755,7 @@ main() {
       configure
       start_compose
       print_access_info
+      setup_log_shippers
       ;;
     add-org)
       shift
@@ -578,9 +776,14 @@ main() {
       section "Regenerate otel config"
       regen_otel_config
       ;;
+    add-log-shipper)
+      shift
+      section "Add Fly.io log shipper"
+      cmd_add_log_shipper "$@"
+      ;;
     *)
       die "Unknown command '${cmd}'." \
-          "Usage: install.sh [install|add-org|remove-org|list-orgs|regen-config]"
+          "Usage: install.sh [install|add-org|remove-org|list-orgs|regen-config|add-log-shipper]"
       ;;
   esac
 }

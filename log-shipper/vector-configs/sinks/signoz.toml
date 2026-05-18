@@ -1,0 +1,66 @@
+[transforms.signoz_transform]
+type = "remap"
+inputs = ["log_json"]
+source = '''
+# Convert ISO 8601 timestamp string -> uint64 nanoseconds (required by httplogreceiver)
+.timestamp = to_unix_timestamp(parse_timestamp!(.timestamp, format: "%+"), unit: "nanoseconds")
+
+# Merge fly.* as flat literal-dot-key attributes ("fly.app.name" etc.).
+# Object literal keys are plain JSON strings — dots are NOT treated as path
+# separators here, so Vector outputs them as-is and httplogreceiver stores
+# them as the attribute names fly.app.name, fly.region, etc.
+if is_object(.fly) {
+  if is_string(.fly.app.instance) { .resources = {"host.name": .fly.app.instance} }
+  . = merge(., compact({
+    "fly.app.name":          .fly.app.name,
+    "fly.app.instance":      .fly.app.instance,
+    "fly.app.process_group": .fly.app.process_group,
+    "fly.region":            .fly.region,
+    "fly.zone":              .fly.zone
+  }))
+  del(.fly)
+}
+
+# Derive severity_text / severity_number from nested log.level.
+if is_object(.log) {
+  if is_string(.log.level) {
+    level = downcase(string!(.log.level))
+    .severity_text = upcase(level)
+    .severity_number = 9
+    if level == "debug"                        { .severity_number = 5 }
+    if level == "warn" || level == "warning"   { .severity_number = 13 }
+    if level == "error"                        { .severity_number = 17 }
+    if level == "fatal" || level == "critical" { .severity_number = 21 }
+  }
+  del(.log)
+}
+
+# Merge event.* as fly.event.* for consistent namespacing.
+if is_object(.event) {
+  . = merge(., compact({
+    "fly.event.provider": .event.provider
+  }))
+  del(.event)
+}
+
+# Strip ANSI escape codes from the message body.
+if is_string(.message) {
+  .message = replace!(.message, r'\x1B\[[0-9;]*[a-zA-Z]', "")
+}
+'''
+
+[sinks.signoz]
+type = "http"
+inputs = ["signoz_transform"]
+uri = "${SIGNOZ_INGESTION_URL:-https://ingest.us.signoz.cloud/logs/vector}"
+
+[sinks.signoz.encoding]
+codec = "json"
+
+# Retry quickly so a brief collector restart resolves within ~10s instead of minutes.
+[sinks.signoz.request]
+retry_initial_backoff_secs = 1
+retry_max_duration_secs = 10
+
+[sinks.signoz.request.headers]
+signoz-ingestion-key = "${SIGNOZ_INGESTION_KEY}"

@@ -1,0 +1,3 @@
+# Generated per-org log shipper configs (fly launch writes these)
+fly.*.toml
+!fly.template.toml
