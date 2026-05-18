@@ -224,12 +224,13 @@ processors:
   transform/fly-set-service-name:
     error_mode: ignore
     metric_statements:
+      # In the datapoint context we can reach up into the parent resource via
+      # resource.attributes[]. The Prometheus receiver sets service.name to the
+      # job name ("fly-federate-...") at the resource level; we override it here
+      # with the actual Fly app name from the per-series `app` data-point label.
       - context: datapoint
         statements:
-          - set(attributes["service.name"], attributes["app"]) where attributes["app"] != nil
-      - context: resource
-        statements:
-          - set(attributes["service.name"], attributes["app"]) where attributes["app"] != nil
+          - set(resource.attributes["service.name"], attributes["app"]) where attributes["app"] != nil
 
   # 6. Copy host.name from resource attributes → data-point attributes.
   #    SigNoz queries host.name as AttributeKeyTypeResource (resource attr) AND as a
