@@ -19,6 +19,7 @@
 #   install.sh add-log-shipper           — deploy a Fly.io log shipper for an org
 #   install.sh provision-elixir-pipeline  — push Elixir/Phoenix log parsing pipeline to SigNoz
 #   install.sh provision-dashboards        — upsert all dashboards/*.json into SigNoz
+#   install.sh provision-pipeline-alerts    — provision critical pipeline health alerts
 
 set -euo pipefail
 
@@ -871,6 +872,13 @@ main() {
       [ -f "${_script}" ] || die "Script not found: ${_script}"
       command -v python3 &>/dev/null || die "python3 is required but not installed."
       section "Provision dashboards"
+      python3 "${_script}"
+      ;;
+    provision-pipeline-alerts)
+      local _script="${INSTALL_DIR}/scripts/provision_pipeline_alerts.py"
+      [ -f "${_script}" ] || die "Script not found: ${_script}"
+      command -v python3 &>/dev/null || die "python3 is required but not installed."
+      section "Provision pipeline health alerts"
       python3 "${_script}"
       ;;
     *)

@@ -1,0 +1,855 @@
+{
+  "title": "Fly.io — Stack Health",
+  "description": "Observability pipeline health: log and metrics ingestion rates, otel-collector export failures, and ClickHouse write errors. First place to check when data stops flowing.",
+  "version": "v4",
+  "tags": ["fly.io", "stack", "pipeline", "health"],
+  "uploadedGrafana": false,
+  "layout": [
+    {
+      "i": "a1d77352-6954-4497-8d6b-37487bd82ffe",
+      "x": 0, "y": 0, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "59999278-727c-45c7-a1a9-85814fe6f156",
+      "x": 0, "y": 1, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "6c6abb35-6a04-4c13-bee7-e23119cddf13",
+      "x": 3, "y": 1, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "40efc3fa-31af-4dd2-89c3-7a5a5d3e4c4d",
+      "x": 6, "y": 1, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "9fd6a075-322b-45e3-8abe-e0ffc5c2138b",
+      "x": 0, "y": 4, "w": 12, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "9c6cb2dd-9196-4ba3-a90b-80c1f8fdec12",
+      "x": 0, "y": 10, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "38d3d2bf-6001-4b47-b1dd-e12d1b727886",
+      "x": 0, "y": 11, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "364cb3cd-b9ad-4eba-9f93-6c816c8be4f3",
+      "x": 3, "y": 11, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "d7c1fbd1-e0ac-46e6-8301-d1e2045e5531",
+      "x": 6, "y": 11, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "3977103d-9564-4850-94fa-3b6bcc86e866",
+      "x": 0, "y": 14, "w": 12, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "a78e8d7f-7bc4-4e90-82f2-034b33862918",
+      "x": 0, "y": 20, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "216fe2e0-4ab0-4dc2-9071-22652245e84f",
+      "x": 0, "y": 21, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "ddeba005-df9a-48e1-89fb-45aeec972ef3",
+      "x": 6, "y": 21, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "8538e68c-4d16-450b-a3f8-e0e2667fb046",
+      "x": 0, "y": 27, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "6ef5d0e3-cab4-4312-8584-919a4df29c8d",
+      "x": 0, "y": 28, "w": 12, "h": 6,
+      "moved": false, "static": false
+    }
+  ],
+  "widgets": [
+    {
+      "id": "a1d77352-6954-4497-8d6b-37487bd82ffe",
+      "title": "Log Pipeline",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "59999278-727c-45c7-a1a9-85814fe6f156",
+      "title": "Log Ingestion Rate",
+      "description": "Count of log records received in the selected time window. A value of 0 means the log pipeline is dead.",
+      "panelTypes": "value",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "e00ee388-5dcb-4bab-b4a3-54c5561e91dd",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000",
+            "legend": "logs in window",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "6c6abb35-6a04-4c13-bee7-e23119cddf13",
+      "title": "Log Delivery Failures",
+      "description": "Total log records that failed to export to ClickHouse in the selected window (increase over 5 m intervals).",
+      "panelTypes": "value",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "681be339-918f-4c29-9220-a170ef9b023e",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(increase(otelcol_exporter_send_failed_log_records[5m]))",
+            "legend": "failed log records",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "40efc3fa-31af-4dd2-89c3-7a5a5d3e4c4d",
+      "title": "Dropped Logs",
+      "description": "Log records dropped because the exporter queue was full. Non-zero values indicate backpressure — the ClickHouse exporter cannot keep up.",
+      "panelTypes": "value",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "9de0b48a-b84e-4f97-947e-31407207eb85",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(increase(otelcol_exporter_enqueue_failed_log_records[5m]))",
+            "legend": "dropped (queue full)",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "9fd6a075-322b-45e3-8abe-e0ffc5c2138b",
+      "title": "Log Records In vs Out",
+      "description": "Rate of log records received by the collector, successfully sent to ClickHouse, and failed. A gap between received and sent indicates delivery problems.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "0ef590f3-8d2f-4e2a-8406-172036c78dab",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(otelcol_receiver_accepted_log_records[5m]))",
+            "legend": "received",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "sum(rate(otelcol_exporter_sent_log_records[5m]))",
+            "legend": "sent to CH",
+            "disabled": false
+          },
+          {
+            "name": "C",
+            "query": "sum(rate(otelcol_exporter_send_failed_log_records[5m]))",
+            "legend": "failed",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "C", "expression": "C", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false},
+          {"name": "B", "query": "", "legend": "", "disabled": false},
+          {"name": "C", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "9c6cb2dd-9196-4ba3-a90b-80c1f8fdec12",
+      "title": "Metrics Pipeline",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "38d3d2bf-6001-4b47-b1dd-e12d1b727886",
+      "title": "Metrics Ingestion Rate",
+      "description": "Current rate of metric points received by the collector from Prometheus scrapes (points per second).",
+      "panelTypes": "value",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "559419b4-5c42-4eb2-9960-7d9d7477c65a",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(otelcol_receiver_accepted_metric_points[5m]))",
+            "legend": "metric points/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "364cb3cd-b9ad-4eba-9f93-6c816c8be4f3",
+      "title": "Metric Delivery Failures",
+      "description": "Total metric points that failed to export to ClickHouse in the selected window (increase over 5 m intervals).",
+      "panelTypes": "value",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "8230753c-c82b-40eb-8e91-f0b46538467d",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(increase(otelcol_exporter_send_failed_metric_points[5m]))",
+            "legend": "failed metric points",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "d7c1fbd1-e0ac-46e6-8301-d1e2045e5531",
+      "title": "Dropped Metrics",
+      "description": "Metric points dropped because the exporter queue was full. This counter fired during the ClickHouse incident — non-zero means data loss.",
+      "panelTypes": "value",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "a01ae3b9-7ff5-4a6b-8105-523b96d198ba",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(increase(otelcol_exporter_enqueue_failed_metric_points[5m]))",
+            "legend": "dropped (queue full)",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "3977103d-9564-4850-94fa-3b6bcc86e866",
+      "title": "Metric Points In vs Out",
+      "description": "Rate of metric points received by the collector, successfully sent to ClickHouse, and failed. A gap between received and sent indicates delivery problems.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "38d9b565-adc6-4c56-9027-ce2db5e25a86",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(otelcol_receiver_accepted_metric_points[5m]))",
+            "legend": "received",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "sum(rate(otelcol_exporter_sent_metric_points[5m]))",
+            "legend": "sent to CH",
+            "disabled": false
+          },
+          {
+            "name": "C",
+            "query": "sum(rate(otelcol_exporter_send_failed_metric_points[5m]))",
+            "legend": "failed",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "C", "expression": "C", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false},
+          {"name": "B", "query": "", "legend": "", "disabled": false},
+          {"name": "C", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "a78e8d7f-7bc4-4e90-82f2-034b33862918",
+      "title": "ClickHouse Write Health",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "216fe2e0-4ab0-4dc2-9071-22652245e84f",
+      "title": "CH Log Write Errors",
+      "description": "Rate of log records failing to write to ClickHouse and rate of log records dropped due to a full queue. Both rising together indicates sustained ClickHouse pressure.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "d5f3de01-998b-49e4-a8df-97e1d1dc261b",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "rate(otelcol_exporter_send_failed_log_records[5m])",
+            "legend": "log write failures/s",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "rate(otelcol_exporter_enqueue_failed_log_records[5m])",
+            "legend": "log drops/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false},
+          {"name": "B", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "ddeba005-df9a-48e1-89fb-45aeec972ef3",
+      "title": "CH Metric Write Errors",
+      "description": "Rate of metric points failing to write to ClickHouse and rate of metric points dropped due to a full queue. Non-zero values mean metric data loss.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "34d2997e-5a6b-464f-9f87-b4cd4d468466",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "rate(otelcol_exporter_send_failed_metric_points[5m])",
+            "legend": "metric write failures/s",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "rate(otelcol_exporter_enqueue_failed_metric_points[5m])",
+            "legend": "metric drops/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false},
+          {"name": "B", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "8538e68c-4d16-450b-a3f8-e0e2667fb046",
+      "title": "Log Volume by App",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "6ef5d0e3-cab4-4312-8584-919a4df29c8d",
+      "title": "Log Volume Over Time",
+      "description": "Log records written to ClickHouse per step interval, broken down by app. Useful for spotting which app is flooding the pipeline or going silent.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "7fab4ed4-dd11-483a-aeed-8bb33c93fd54",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT toStartOfInterval(toDateTime(intDiv(timestamp, 1000000000)), INTERVAL {{.step_seconds}} SECOND) AS ts, attribute_string_app AS app, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND attribute_string_app != '' GROUP BY ts, app ORDER BY ts ASC",
+            "legend": "{{app}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": {"items": [], "op": "AND"},
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    }
+  ],
+  "panelMap": {},
+  "variables": {}
+}
