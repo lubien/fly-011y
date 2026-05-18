@@ -787,7 +787,7 @@ main() {
       [ -f "${_script}" ] || die "Script not found: ${_script}"
       command -v python3 &>/dev/null || die "python3 is required but not installed."
       section "Provision Elixir log pipeline"
-      SETUP_DIR="${SETUP_DIR}" python3 "${_script}"
+      python3 "${_script}"
       ;;
     *)
       die "Unknown command '${cmd}'." \

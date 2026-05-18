@@ -26,38 +26,10 @@ import uuid
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-
-# ── Locate secrets.env ────────────────────────────────────────────────────────
-def _read_secrets_env(key: str) -> str:
-    """Read a KEY=VALUE line from the install secrets.env, if present."""
-    candidates = [
-        # Explicit override (e.g. set by install.sh subcommand)
-        os.path.join(os.environ.get("SETUP_DIR", ""), "secrets.env"),
-        # Default install path
-        os.path.expanduser("~/fly-o11y/setup/secrets.env"),
-    ]
-    for path in candidates:
-        if not os.path.isfile(path):
-            continue
-        with open(path) as fh:
-            for line in fh:
-                line = line.strip()
-                if line.startswith(f"{key}="):
-                    return line[len(key) + 1 :]
-    return ""
-
-
 # ── Config ────────────────────────────────────────────────────────────────────
-SIGNOZ_URL = (
-    os.environ.get("SIGNOZ_URL")
-    or _read_secrets_env("SIGNOZ_GLOBAL_EXTERNAL__URL")
-    or ""
-).rstrip("/")
-
-if not SIGNOZ_URL:
-    SIGNOZ_URL = (
-        input("SigNoz URL (e.g. https://NAME.sprites.app): ").strip().rstrip("/")
-    )
+# Default to the local SigNoz port — the script runs on the same machine.
+# Override with SIGNOZ_URL if you need to target a remote instance.
+SIGNOZ_URL = os.environ.get("SIGNOZ_URL", "http://localhost:3301").rstrip("/")
 
 TOKEN = os.environ.get("SIGNOZ_TOKEN", "")
 if not TOKEN:
