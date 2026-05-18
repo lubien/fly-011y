@@ -12,11 +12,11 @@ source = '''
 if is_object(.fly) {
   if is_string(.fly.app.instance) { .resources = {"host.name": .fly.app.instance} }
   . = merge(., compact({
-    "fly.app.name":          .fly.app.name,
-    "fly.app.instance":      .fly.app.instance,
-    "fly.app.process_group": .fly.app.process_group,
-    "fly.region":            .fly.region,
-    "fly.zone":              .fly.zone
+    "app":           .fly.app.name,
+    "instance":      .fly.app.instance,
+    "process_group": .fly.app.process_group,
+    "region":        .fly.region,
+    "host":          .fly.zone
   }))
   del(.fly)
 }
@@ -38,7 +38,7 @@ if is_object(.log) {
 # Merge event.* as fly.event.* for consistent namespacing.
 if is_object(.event) {
   . = merge(., compact({
-    "fly.event.provider": .event.provider
+    "event_provider": .event.provider
   }))
   del(.event)
 }
