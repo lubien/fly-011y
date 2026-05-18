@@ -178,7 +178,7 @@ def la(name, desc, severity, window, filter_expr, threshold, match="at_least_onc
                             "signal": "logs",
                             "name": "A",
                             "disabled": False,
-                            "stepInterval": "60",
+                            "stepInterval": "60s",
                             "filter": {"expression": filter_expr},
                             "aggregations": [
                                 {"expression": "count()", "alias": "count"}
