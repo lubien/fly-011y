@@ -606,9 +606,6 @@ deploy_log_shipper() {
     --no-deploy \
     --yes
 
-  # Ensure at least 2 machines run for HA (NATS queue group deduplication)
-  sed -i 's/min_machines_running = 0/min_machines_running = 2/' "${toml_file}"
-
   info "Deploying log shipper for '${org_slug}' (this may take a few minutes)…"
   fly_cmd deploy \
     -c "${toml_file}" \

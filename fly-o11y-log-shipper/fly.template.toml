@@ -3,11 +3,46 @@
 [env]
   QUEUE = "log-shipper-queue"
 
+# Give Vector time to flush the disk buffer on graceful shutdown.
+kill_signal = "SIGTERM"
+kill_timeout = 30
+
+# 256 MB of swap softens OOM risk on the 1 GB machine.
+swap_size_mb = 256
+
+# Vector's API listens on 8686 for health checks.
+# auto_stop_machines = "off" ensures Fly never idles this machine down —
+# it is a background worker, not a request-handler.
+# min_machines_running = 2 keeps two machines alive for NATS queue-group HA.
+[http_service]
+  internal_port = 8686
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = false
+  min_machines_running = 2
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    timeout = "10s"
+
+# Always restart — no matter the exit code.
+# The watchdog exits with 1 after 5 min of stalled delivery so Fly restarts
+# the machine quickly and drains the disk buffer from a clean state.
+[[restart]]
+  policy = "always"
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
   memory_mb = 1024
+  # Persist the root filesystem across restarts (not deploys) so Vector's
+  # on-disk buffer at /var/lib/vector survives watchdog-triggered restarts.
+  persist_rootfs = "restart"
 
 [[metrics]]
   port = 9598

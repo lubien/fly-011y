@@ -58,10 +58,12 @@ compression = "gzip"
 [sinks.signoz.encoding]
 codec = "json"
 
-# Retry quickly so a brief collector restart resolves within ~10s instead of minutes.
+# Retry quickly on brief outages (initial = 1s), but cap exponential backoff at 5 min
+# so a sustained Sprite outage doesn't flood logs with retry warnings every 10s.
 [sinks.signoz.request]
 retry_initial_backoff_secs = 1
-retry_max_duration_secs = 10
+retry_max_duration_secs = 300
+request_timeout_secs = 30
 
 [sinks.signoz.request.headers]
 signoz-ingestion-key = "${SIGNOZ_INGESTION_KEY}"
