@@ -31,32 +31,62 @@ from urllib.request import Request, urlopen
 # Override with SIGNOZ_URL if you need to target a remote instance.
 SIGNOZ_URL = os.environ.get("SIGNOZ_URL", "http://localhost:3301").rstrip("/")
 
+
+def _http(
+    method: str, path: str, payload: dict | None = None, headers: dict | None = None
+) -> bytes:
+    """Raw HTTP helper used before HEADERS is established."""
+    data = json.dumps(payload).encode() if payload is not None else None
+    h = {"Content-Type": "application/json", **(headers or {})}
+    req = Request(f"{SIGNOZ_URL}{path}", data=data, headers=h, method=method)
+    try:
+        with urlopen(req) as resp:
+            return resp.read()
+    except HTTPError as exc:
+        body = exc.read()
+        print(
+            f"{method} {path} failed (HTTP {exc.code}): {body.decode(errors='replace')}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def _json(
+    method: str, path: str, payload: dict | None = None, headers: dict | None = None
+) -> dict:
+    body = _http(method, path, payload, headers)
+    try:
+        return json.loads(body)
+    except json.JSONDecodeError as exc:
+        print(f"{method} {path} returned non-JSON ({exc}):", file=sys.stderr)
+        print(body.decode(errors="replace"), file=sys.stderr)
+        sys.exit(1)
+
+
 TOKEN = os.environ.get("SIGNOZ_TOKEN", "")
 if not TOKEN:
     email = input("SigNoz email: ")
     password = getpass.getpass("SigNoz password: ")
-    data = json.dumps({"email": email, "password": password}).encode()
-    req = Request(
-        f"{SIGNOZ_URL}/api/v1/login",
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urlopen(req) as resp:
-            body = resp.read()
-    except HTTPError as exc:
-        body = exc.read()
-        print(
-            f"Login failed (HTTP {exc.code}): {body.decode(errors='replace')}",
-            file=sys.stderr,
-        )
+
+    # 1. Resolve orgId for this email
+    ctx = _json("GET", f"/api/v2/sessions/context?email={email}&ref=http://localhost")
+    orgs = ctx.get("data", {}).get("orgs", [])
+    if not orgs:
+        print("No organisations found for that email.", file=sys.stderr)
         sys.exit(1)
-    try:
-        TOKEN = json.loads(body)["accessJwt"]
-    except (json.JSONDecodeError, KeyError) as exc:
-        print(f"Login response unexpected ({exc}):", file=sys.stderr)
-        print(body.decode(errors="replace"), file=sys.stderr)
+    org_id = orgs[0]["id"]
+
+    # 2. Exchange credentials for a token
+    result = _json(
+        "POST",
+        "/api/v2/sessions/email_password",
+        {"email": email, "password": password, "orgId": org_id},
+    )
+    TOKEN = (result.get("data") or result).get("accessToken", "")
+    if not TOKEN:
+        print(
+            f"Login succeeded but no accessToken in response: {result}", file=sys.stderr
+        )
         sys.exit(1)
 
 HEADERS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
@@ -64,28 +94,12 @@ HEADERS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json
 PIPELINE_ALIAS = "elixir-logs"
 
 
-# ── HTTP helpers ──────────────────────────────────────────────────────────────
 def api_get(path: str) -> dict:
-    req = Request(f"{SIGNOZ_URL}{path}", headers=HEADERS, method="GET")
-    try:
-        with urlopen(req) as resp:
-            return json.loads(resp.read())
-    except HTTPError as exc:
-        print(f"GET {path} failed ({exc.code}): {exc.read().decode()}", file=sys.stderr)
-        sys.exit(1)
+    return _json("GET", path, headers=HEADERS)
 
 
 def api_post(path: str, payload: dict) -> dict:
-    data = json.dumps(payload).encode()
-    req = Request(f"{SIGNOZ_URL}{path}", data=data, headers=HEADERS, method="POST")
-    try:
-        with urlopen(req) as resp:
-            return json.loads(resp.read())
-    except HTTPError as exc:
-        print(
-            f"POST {path} failed ({exc.code}): {exc.read().decode()}", file=sys.stderr
-        )
-        sys.exit(1)
+    return _json("POST", path, payload, headers=HEADERS)
 
 
 # ── Regexes ───────────────────────────────────────────────────────────────────
