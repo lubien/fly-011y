@@ -53,6 +53,7 @@ if is_string(.message) {
 type = "http"
 inputs = ["signoz_transform"]
 uri = "${SIGNOZ_INGESTION_URL:-https://ingest.us.signoz.cloud/logs/vector}"
+compression = "gzip"
 
 [sinks.signoz.encoding]
 codec = "json"
@@ -64,3 +65,10 @@ retry_max_duration_secs = 10
 
 [sinks.signoz.request.headers]
 signoz-ingestion-key = "${SIGNOZ_INGESTION_KEY}"
+
+# Buffer to disk so logs survive SigNoz restarts / brief outages.
+# 256 MB cap; drop_newest under pressure rather than blocking the pipeline.
+[sinks.signoz.buffer]
+type = "disk"
+max_size = 268435456
+when_full = "drop_newest"
