@@ -106,6 +106,22 @@ def api_post(path: str, payload: dict) -> dict:
 # Source of truth: docs/elixir-log-parsing.md
 # \xb5 = µ (U+00B5 MICRO SIGN) kept as ASCII escape
 
+# Matches Elixir/OTP exception notation: ** (ExceptionModule) message
+# This appears in OTP crash reports, GenServer termination logs, and Logger
+# output — sometimes WITHOUT a [error] prefix (e.g. standalone crash reports
+# or lines that are continuation of a multi-line error dump).
+# Extracts exception.type and exception.message so they become searchable
+# attributes; a severity step after this forces the line to ERROR.
+RE_OTP_EXCEPTION = (
+    r"\*\*\s+\((?P<exception_type>[A-Za-z0-9_.]+)\)"
+    r"\s+(?P<exception_message>.+)"
+)
+
+# Matches Elixir/OTP stack frame lines that follow an exception, e.g.:
+#   (db_connection 2.5.0) lib/db_connection.ex:1432: DBConnection.run_execute/5
+# These lines have no [error] prefix and would otherwise stay INFO.
+RE_OTP_STACKFRAME = r"^\s*\([a-z_]+(?:\s+[\d.]+)?\)\s+\S+\.ex:\d+:\s+[A-Za-z]"
+
 # Matches the [level] bracket in ANY Elixir Logger line, e.g.:
 #   01:12:14.418 [error] Postgrex.Protocol ...
 #   21:19:24.401 request_id=X ... [info] GET /path
@@ -230,6 +246,20 @@ def duration(name: str) -> dict:
     }
 
 
+def force_error(name: str) -> dict:
+    """Set log_level=error so the next severity parser promotes this line."""
+    return {
+        "id": uid(),
+        "orderId": 0,
+        "type": "add",
+        "name": name,
+        "enabled": True,
+        "field": "attributes.log_level",
+        "value": "error",
+        "output": "",
+    }
+
+
 def chain(ops: list[dict]) -> list[dict]:
     """Assign orderId and wire output references through the list."""
     for i, op in enumerate(ops):
@@ -268,6 +298,21 @@ def make_pipeline() -> dict:
             # Phoenix.Logger: channel message handled
             regex("Channel Message: regex", RE_CHANNEL_MSG),
             duration("Channel Message: duration"),
+            # ── OTP / GenServer exception extraction ────────────────────────────────────────
+            # Catches: ** (DBConnection.ConnectionError) client ... timed out
+            # Extracts exception.type and exception.message as structured attrs,
+            # then forces severity to ERROR so lines without [error] are still
+            # classified correctly (e.g. standalone OTP crash reports).
+            regex("OTP Exception: extract type+message", RE_OTP_EXCEPTION),
+            force_error("OTP Exception: force error severity"),
+            severity("OTP Exception: severity"),
+            # ── OTP stack frame lines ─────────────────────────────────────────────────
+            # Catches: (db_connection 2.5.0) lib/db_connection.ex:1432: ...
+            # These continuation lines have no [error] and would otherwise
+            # stay INFO. Mark them ERROR so they don’t get buried.
+            regex("OTP Stack Frame: detect", RE_OTP_STACKFRAME),
+            force_error("OTP Stack Frame: force error severity"),
+            severity("OTP Stack Frame: severity"),
         ]
     )
 
