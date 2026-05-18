@@ -437,6 +437,7 @@ cmd_add_org() {
   local token
   token=$(fly_cmd tokens create readonly --name "fly-o11y-prometheus" --org "${slug}") || \
     die "Failed to generate token for '${slug}'."
+  token="${token#FlyV1 }"  # strip scheme prefix — Prometheus authorization.type adds it back
 
   mkdir -p otel/orgs
   printf '%s' "${token}" > "otel/orgs/${slug}.token"
@@ -762,6 +763,7 @@ setup_prometheus_orgs() {
         warn "Failed to generate token for '${_slug}' — skipping."
         continue
       }
+      _token="${_token#FlyV1 }"  # strip scheme prefix — Prometheus authorization.type adds it back
       mkdir -p otel/orgs
       printf '%s' "${_token}" > "otel/orgs/${_slug}.token"
       chmod 600 "otel/orgs/${_slug}.token"
