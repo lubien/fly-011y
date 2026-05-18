@@ -1,0 +1,1081 @@
+{
+  "title": "Fly.io \u2014 Machine Lifecycle",
+  "description": "VM health events: OOM kills, exit codes, restarts, and heartbeat status.",
+  "version": "v4",
+  "tags": [
+    "fly.io",
+    "machines",
+    "reliability"
+  ],
+  "uploadedGrafana": false,
+  "layout": [
+    {
+      "i": "deb4c55b-a452-4173-a772-a88b4df008a8",
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "c32c5864-8e52-44f1-9503-b931ba590d35",
+      "x": 0,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "635684d2-f96d-49cb-aff8-17c74992f204",
+      "x": 3,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "14f4b24e-c362-4a31-8395-6bbb11c9946d",
+      "x": 0,
+      "y": 4,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "be5cbef6-6c4d-40cf-96f6-73e067dcefc3",
+      "x": 0,
+      "y": 5,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "dac2a521-3ee4-46d6-b323-68f4f87328d1",
+      "x": 6,
+      "y": 5,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "56d92e74-5adf-4ee0-882c-15b8b3564b0f",
+      "x": 0,
+      "y": 11,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "07907161-f8f6-493f-9236-52f6435c3d6f",
+      "x": 0,
+      "y": 12,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "abac9455-bf93-4ae0-aac4-85355ae59458",
+      "x": 6,
+      "y": 12,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "4863f97f-84fd-45eb-abc4-2e19e8dfa721",
+      "x": 0,
+      "y": 18,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "91def4b7-b681-4ce6-8999-2975dae4ab0e",
+      "x": 0,
+      "y": 19,
+      "w": 12,
+      "h": 6,
+      "moved": false,
+      "static": false
+    }
+  ],
+  "widgets": [
+    {
+      "id": "deb4c55b-a452-4173-a772-a88b4df008a8",
+      "title": "At a Glance",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "c32c5864-8e52-44f1-9503-b931ba590d35",
+      "title": "OOM Kill Count",
+      "description": "Total OOM kills in the last 1 h window.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "4a4eed73-e526-498e-a4ea-1c8c6be29e21",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "increase(fly_instance_exit_oom{app=\"$app\"}[1h])",
+            "legend": "OOM kills (1h)",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "last",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "635684d2-f96d-49cb-aff8-17c74992f204",
+      "title": "Machines Up",
+      "description": "Number of VMs currently heartbeating.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "ace1434b-843e-4409-be0e-9ded8dcb1cc4",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "count(fly_instance_up{app=\"$app\"} == 1)",
+            "legend": "live machines",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "last",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "14f4b24e-c362-4a31-8395-6bbb11c9946d",
+      "title": "OOM & Crashes",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "be5cbef6-6c4d-40cf-96f6-73e067dcefc3",
+      "title": "OOM Kills Over Time",
+      "description": "Rate of OOM kill events per VM.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "9fdb7084-f0ae-4caf-b91d-46b9451352db",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (rate(fly_instance_exit_oom{app=\"$app\"}[5m]))",
+            "legend": "{{exported_instance}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "dac2a521-3ee4-46d6-b323-68f4f87328d1",
+      "title": "Exit Codes Over Time",
+      "description": "Rate of non-zero exit codes per VM.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "fd58a67d-cded-4c49-be07-c414b976d411",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (rate(fly_instance_exit_code{app=\"$app\"}[5m]))",
+            "legend": "{{exported_instance}} exit code",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "56d92e74-5adf-4ee0-882c-15b8b3564b0f",
+      "title": "Machine Health",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "07907161-f8f6-493f-9236-52f6435c3d6f",
+      "title": "Machine Heartbeat",
+      "description": "Value=1 means VM is reporting. Gaps indicate the VM stopped.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "2a842df5-b216-4356-bc00-b7af3c5de08d",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "fly_instance_up{app=\"$app\"}",
+            "legend": "{{exported_instance}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "abac9455-bf93-4ae0-aac4-85355ae59458",
+      "title": "VM Exit Code (Hypervisor)",
+      "description": "Rate of hypervisor-level exit codes per VM.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "feac6565-4e6c-4f46-9bf6-aa524e341506",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (rate(fly_instance_exit_vm_code{app=\"$app\"}[5m]))",
+            "legend": "{{exported_instance}} vm code",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "4863f97f-84fd-45eb-abc4-2e19e8dfa721",
+      "title": "Exit Code Distribution",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "91def4b7-b681-4ce6-8999-2975dae4ab0e",
+      "title": "Exit Code Distribution",
+      "description": "24 h increase in exit codes per VM \u2014 shows which machines exited most.",
+      "panelTypes": "bar",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "59d00932-2698-4706-9d8e-e16d341b54bf",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (increase(fly_instance_exit_code{app=\"$app\"}[24h]))",
+            "legend": "{{exported_instance}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    }
+  ],
+  "panelMap": {},
+  "variables": {
+    "6dc24553-47b6-42de-9d93-80760cbb50b5": {
+      "id": "6dc24553-47b6-42de-9d93-80760cbb50b5",
+      "name": "app",
+      "description": "Fly.io app name",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'app') AS app FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'fly_instance_up' GROUP BY app ORDER BY app",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": false,
+      "allSelected": false,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 1,
+      "modificationUUID": "711f9e6c-b8bf-408a-89bb-dc9c5af9ec09"
+    },
+    "659df3b7-560e-432a-a4fc-7103dfcce180": {
+      "id": "659df3b7-560e-432a-a4fc-7103dfcce180",
+      "name": "instance",
+      "description": "Fly.io VM instance (multi-select)",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'exported_instance') AS instance FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'fly_instance_up' AND JSONExtractString(labels, 'app') = '{{.app}}' GROUP BY instance ORDER BY instance",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "allSelected": true,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 2,
+      "modificationUUID": "5510c5e8-c4e4-4c61-9327-1f030e5b4853"
+    }
+  }
+}

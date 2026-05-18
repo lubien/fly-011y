@@ -18,6 +18,7 @@
 #   install.sh regen-config     — regenerate otel config from current orgs
 #   install.sh add-log-shipper           — deploy a Fly.io log shipper for an org
 #   install.sh provision-elixir-pipeline  — push Elixir/Phoenix log parsing pipeline to SigNoz
+#   install.sh provision-dashboards        — upsert all dashboards/*.json into SigNoz
 
 set -euo pipefail
 
@@ -866,6 +867,13 @@ main() {
       [ -f "${_script}" ] || die "Script not found: ${_script}"
       command -v python3 &>/dev/null || die "python3 is required but not installed."
       section "Provision Elixir log pipeline"
+      python3 "${_script}"
+      ;;
+    provision-dashboards)
+      local _script="${INSTALL_DIR}/scripts/provision_dashboards.py"
+      [ -f "${_script}" ] || die "Script not found: ${_script}"
+      command -v python3 &>/dev/null || die "python3 is required but not installed."
+      section "Provision dashboards"
       python3 "${_script}"
       ;;
     *)

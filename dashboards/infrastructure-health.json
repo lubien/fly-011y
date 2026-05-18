@@ -1,0 +1,952 @@
+{
+  "title": "Fly.io \u2014 Infrastructure Health",
+  "description": "Per-VM CPU, memory, disk, and network utilisation for capacity planning and incident investigation.",
+  "version": "v4",
+  "tags": ["fly.io", "infrastructure", "cpu", "memory"],
+  "uploadedGrafana": false,
+  "layout": [
+    {
+      "i": "fa46ae4a-dd52-474c-8cd3-e24825916292",
+      "x": 0, "y": 0, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "0b5a0c75-65ed-40cb-9242-7356d193c2c4",
+      "x": 0, "y": 1, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "80aa567b-ab16-4c86-8c32-0820173e7b96",
+      "x": 3, "y": 1, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "0ea160bc-dff9-489e-a77d-cf6f7e72ce50",
+      "x": 6, "y": 1, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "5d525ccf-f81c-4cde-9f44-f0deddc47697",
+      "x": 0, "y": 4, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "c758450d-1e6e-4a1f-b297-54465960b1d4",
+      "x": 0, "y": 5, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "301efb0c-c6dd-4fdc-99f4-9c1bb41b7549",
+      "x": 6, "y": 5, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "895d1d3c-5aa5-443b-9b80-6e13376a9b0d",
+      "x": 0, "y": 11, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "1fd3dac0-975e-48a6-9ae8-323d038be858",
+      "x": 0, "y": 12, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "d2f98f30-9444-4abe-9916-3ce1749b5b4e",
+      "x": 6, "y": 12, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "d37cd695-2391-4fd1-b11b-e1f7aeefdab6",
+      "x": 0, "y": 18, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "3c07d1df-bc42-4592-81da-4478e441b55e",
+      "x": 0, "y": 19, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "318fc8f2-7512-433d-8d3c-197e32ff30ff",
+      "x": 6, "y": 19, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "64c3d34d-a424-406a-9a3c-2bec04caf93b",
+      "x": 0, "y": 25, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "bc89799e-32ca-4e9e-a74d-c674cb4be2ff",
+      "x": 0, "y": 26, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "4698b7ad-bfb4-41a0-9780-e0a9723470d1",
+      "x": 6, "y": 26, "w": 6, "h": 6,
+      "moved": false, "static": false
+    }
+  ],
+  "widgets": [
+    {
+      "id": "fa46ae4a-dd52-474c-8cd3-e24825916292",
+      "title": "At a Glance",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "0b5a0c75-65ed-40cb-9242-7356d193c2c4",
+      "title": "Root Filesystem Available",
+      "description": "Average available bytes on the root filesystem across all instances of the app.",
+      "panelTypes": "value",
+      "yAxisUnit": "bytes",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "834aeebb-6804-4f37-a838-269bc4fd9075",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "avg(fly_instance_filesystem_blocks_avail{app=\"$app\"} * fly_instance_filesystem_block_size{app=\"$app\"})",
+            "legend": "available",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "80aa567b-ab16-4c86-8c32-0820173e7b96",
+      "title": "Volume Used %",
+      "description": "Maximum Fly volume utilisation percentage across all volumes attached to this app.",
+      "panelTypes": "value",
+      "yAxisUnit": "percent",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "75600066-2f61-45da-92fc-715da00b16a5",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "max(fly_volume_used_pct{app=\"$app\"})",
+            "legend": "max vol %",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "0ea160bc-dff9-489e-a77d-cf6f7e72ce50",
+      "title": "FD Ratio %",
+      "description": "File-descriptor utilisation: allocated FDs as a percentage of the per-instance maximum.",
+      "panelTypes": "value",
+      "yAxisUnit": "percent",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "9756643d-eb17-4718-b8fb-b9c6120ff550",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (fly_instance_filefd_allocated{app=\"$app\"})",
+            "legend": "",
+            "disabled": true
+          },
+          {
+            "name": "B",
+            "query": "sum by (exported_instance) (fly_instance_filefd_maximum{app=\"$app\"})",
+            "legend": "",
+            "disabled": true
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": true,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": true,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "last", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": [
+            { "queryName": "F1", "expression": "A/B*100", "legend": "", "disabled": false }
+          ]
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false },
+          { "name": "B", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "5d525ccf-f81c-4cde-9f44-f0deddc47697",
+      "title": "CPU",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "c758450d-1e6e-4a1f-b297-54465960b1d4",
+      "title": "CPU Utilisation %",
+      "description": "Percentage of CPU time spent in non-idle modes per instance (5 m rate).",
+      "panelTypes": "graph",
+      "yAxisUnit": "percent",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "8506a749-9378-4318-8b2e-5da1719682fb",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (rate(fly_instance_cpu{app=\"$app\",mode!=\"idle\"}[5m]))",
+            "legend": "",
+            "disabled": true
+          },
+          {
+            "name": "B",
+            "query": "sum by (exported_instance) (rate(fly_instance_cpu{app=\"$app\"}[5m]))",
+            "legend": "",
+            "disabled": true
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": true,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": true,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": [
+            { "queryName": "F1", "expression": "A/B*100", "legend": "{{exported_instance}}", "disabled": false }
+          ]
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false },
+          { "name": "B", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "301efb0c-c6dd-4fdc-99f4-9c1bb41b7549",
+      "title": "CPU Throttle Rate",
+      "description": "Rate of CPU throttle context-switches per second per instance — high values indicate CPU contention.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "570eba25-4910-47c3-8357-23a9b094f991",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (rate(fly_instance_cpu_throttle{app=\"$app\"}[5m]))",
+            "legend": "{{exported_instance}} throttle cs/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "895d1d3c-5aa5-443b-9b80-6e13376a9b0d",
+      "title": "Memory",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "1fd3dac0-975e-48a6-9ae8-323d038be858",
+      "title": "Memory Used %",
+      "description": "Percentage of total memory in use per instance (total minus available, divided by total).",
+      "panelTypes": "graph",
+      "yAxisUnit": "percent",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "9557fc8d-de5e-4985-9551-f487777c3c54",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "fly_instance_memory_mem_total{app=\"$app\"} - fly_instance_memory_mem_available{app=\"$app\"}",
+            "legend": "",
+            "disabled": true
+          },
+          {
+            "name": "B",
+            "query": "fly_instance_memory_mem_total{app=\"$app\"}",
+            "legend": "",
+            "disabled": true
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": true,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": true,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": [
+            { "queryName": "F1", "expression": "A/B*100", "legend": "{{exported_instance}} memory %", "disabled": false }
+          ]
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false },
+          { "name": "B", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "d2f98f30-9444-4abe-9916-3ce1749b5b4e",
+      "title": "Load Average",
+      "description": "1-minute, 5-minute, and 15-minute load averages per instance.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "49eaf0ec-f2b5-4841-bfe8-4de14e373b1f",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "fly_instance_load_average{app=\"$app\",minutes=\"1\"}",
+            "legend": "{{exported_instance}} 1m",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "fly_instance_load_average{app=\"$app\",minutes=\"5\"}",
+            "legend": "{{exported_instance}} 5m",
+            "disabled": false
+          },
+          {
+            "name": "C",
+            "query": "fly_instance_load_average{app=\"$app\",minutes=\"15\"}",
+            "legend": "{{exported_instance}} 15m",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "C", "expression": "C", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false },
+          { "name": "B", "query": "", "legend": "", "disabled": false },
+          { "name": "C", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "d37cd695-2391-4fd1-b11b-e1f7aeefdab6",
+      "title": "Disk",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "3c07d1df-bc42-4592-81da-4478e441b55e",
+      "title": "Disk Throughput MB/s",
+      "description": "Bytes read and written per second per instance per device (sectors * 512 bytes).",
+      "panelTypes": "graph",
+      "yAxisUnit": "Bps",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "7fcb4b35-5808-4752-a72d-53c96f6af708",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, device) (rate(fly_instance_disk_sectors_read{app=\"$app\"}[5m])) * 512",
+            "legend": "{{exported_instance}} {{device}} read",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "sum by (exported_instance, device) (rate(fly_instance_disk_sectors_written{app=\"$app\"}[5m])) * 512",
+            "legend": "{{exported_instance}} {{device}} write",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false },
+          { "name": "B", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "318fc8f2-7512-433d-8d3c-197e32ff30ff",
+      "title": "Disk I/O Time",
+      "description": "Milliseconds per second spent reading and writing to disk per instance per device.",
+      "panelTypes": "graph",
+      "yAxisUnit": "ms",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "97edf151-4728-4058-ae13-3ff955ad7e95",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, device) (rate(fly_instance_disk_time_reading{app=\"$app\"}[5m]))",
+            "legend": "{{exported_instance}} {{device}} read ms/s",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "sum by (exported_instance, device) (rate(fly_instance_disk_time_writing{app=\"$app\"}[5m]))",
+            "legend": "{{exported_instance}} {{device}} write ms/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false },
+          { "name": "B", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "64c3d34d-a424-406a-9a3c-2bec04caf93b",
+      "title": "Network",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "bc89799e-32ca-4e9e-a74d-c674cb4be2ff",
+      "title": "Network Throughput",
+      "description": "Bytes received (rx) and transmitted (tx) per second on eth0 per instance.",
+      "panelTypes": "graph",
+      "yAxisUnit": "Bps",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "d35fcba1-04a2-4fa3-aee0-61b44fbac530",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (rate(fly_instance_net_recv_bytes{app=\"$app\",device=\"eth0\"}[5m]))",
+            "legend": "{{exported_instance}} rx",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "sum by (exported_instance) (rate(fly_instance_net_sent_bytes{app=\"$app\",device=\"eth0\"}[5m]))",
+            "legend": "{{exported_instance}} tx",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            },
+            {
+              "queryName": "B", "expression": "B", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false },
+          { "name": "B", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+    {
+      "id": "4698b7ad-bfb4-41a0-9780-e0a9723470d1",
+      "title": "Network Errors & Drops",
+      "description": "Sum of receive and transmit errors plus drops per second per instance across all interfaces.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        { "key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" },
+        { "key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag" }
+      ],
+      "query": {
+        "id": "18e00151-4b53-4d52-9311-4a552e71c01a",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance) (rate(fly_instance_net_recv_errs{app=\"$app\"}[5m]) + rate(fly_instance_net_recv_drop{app=\"$app\"}[5m]) + rate(fly_instance_net_sent_errs{app=\"$app\"}[5m]) + rate(fly_instance_net_sent_drop{app=\"$app\"}[5m]))",
+            "legend": "{{exported_instance}} errors+drops/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A", "expression": "A", "dataSource": "metrics", "disabled": false,
+              "aggregateAttribute": { "key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": "" },
+              "aggregateOperator": "noop", "timeAggregation": "rate", "spaceAggregation": "sum",
+              "reduceTo": "avg", "filters": { "items": [], "op": "AND" },
+              "groupBy": [], "having": [], "legend": "",
+              "limit": null, "orderBy": [], "stepInterval": 60, "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    }
+  ],
+  "panelMap": {},
+  "variables": {
+    "7c8003e1-ad5b-4ba7-b790-d595cb6e6f9f": {
+      "id": "7c8003e1-ad5b-4ba7-b790-d595cb6e6f9f",
+      "name": "app",
+      "description": "Fly.io app name",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'app') AS app FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'fly_instance_up' GROUP BY app ORDER BY app",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": false,
+      "allSelected": false,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 1,
+      "modificationUUID": "22e8030c-4cef-4ed1-b51b-f27b70253e63"
+    },
+    "3c611388-5005-4e5b-946e-e135bba78bab": {
+      "id": "3c611388-5005-4e5b-946e-e135bba78bab",
+      "name": "instance",
+      "description": "Fly.io machine instance filter (multi-select)",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'exported_instance') AS instance FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'fly_instance_up' AND JSONExtractString(labels, 'app') = '{{.app}}' GROUP BY instance ORDER BY instance",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "allSelected": true,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 2,
+      "modificationUUID": "de7f9ec9-ad06-4428-b665-c791f926bcce"
+    },
+    "47b9651e-3a39-4232-a9e9-14e9be0fb1fd": {
+      "id": "47b9651e-3a39-4232-a9e9-14e9be0fb1fd",
+      "name": "region",
+      "description": "Fly.io region filter (multi-select)",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'region') AS region FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'fly_instance_up' AND JSONExtractString(labels, 'app') = '{{.app}}' GROUP BY region ORDER BY region",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "allSelected": true,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 3,
+      "modificationUUID": "570a0da5-f078-497a-ba52-0d01aaa8f3f4"
+    }
+  }
+}

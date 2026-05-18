@@ -1,0 +1,628 @@
+{
+  "title": "Fly.io — Logs Overview",
+  "description": "Application log volume, severity distribution, error patterns, and Fly proxy events.",
+  "version": "v4",
+  "tags": ["fly.io", "logs", "errors"],
+  "uploadedGrafana": false,
+  "layout": [
+    {
+      "i": "5b6d0bb7-4d37-487b-8591-63c704e62949",
+      "x": 0, "y": 0, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "2fc0cbea-d1b4-4d37-894d-38317937b8d7",
+      "x": 0, "y": 1, "w": 3, "h": 3,
+      "moved": false, "static": false
+    },
+    {
+      "i": "d33e1da2-bb66-4c0a-9e18-62ff96807b7c",
+      "x": 0, "y": 4, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "b1493166-4268-4c2f-bfad-6c60956d3b71",
+      "x": 0, "y": 5, "w": 12, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "9da776dd-1802-462b-8248-b7c08692c6da",
+      "x": 0, "y": 11, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "7408411d-c44c-4245-8a45-67e647e76e84",
+      "x": 0, "y": 12, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "3c6ba066-d1fa-4c0f-b9f3-9dea092f8dc9",
+      "x": 6, "y": 12, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "822865e2-3632-41f0-99a0-c55962e12f0d",
+      "x": 0, "y": 18, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "420f6548-91dc-4983-92fb-5adf7e1847b5",
+      "x": 0, "y": 19, "w": 12, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "32af9061-9863-47df-90f9-78f966c32d5e",
+      "x": 0, "y": 25, "w": 12, "h": 1,
+      "moved": false, "static": false,
+      "maxH": 1, "minH": 1, "minW": 12
+    },
+    {
+      "i": "5ddc0d3c-7372-4d95-91c5-54e9e961b1db",
+      "x": 0, "y": 26, "w": 6, "h": 6,
+      "moved": false, "static": false
+    },
+    {
+      "i": "9605e1d3-97dd-4779-9662-907a2a7c7f16",
+      "x": 6, "y": 26, "w": 6, "h": 6,
+      "moved": false, "static": false
+    }
+  ],
+  "widgets": [
+    {
+      "id": "5b6d0bb7-4d37-487b-8591-63c704e62949",
+      "title": "At a Glance",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "2fc0cbea-d1b4-4d37-894d-38317937b8d7",
+      "title": "Error Log Rate",
+      "description": "Total ERROR and FATAL log entries in the selected time window.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "2e5f4b93-84bb-48ed-a50d-b7bcdfd7e337",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '')",
+            "legend": "errors in window",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {"items": [], "op": "AND"},
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "d33e1da2-bb66-4c0a-9e18-62ff96807b7c",
+      "title": "Volume & Severity",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "b1493166-4268-4c2f-bfad-6c60956d3b71",
+      "title": "Log Volume by Severity",
+      "description": "Time-series log volume broken down by severity level.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": true,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "5e690e95-9b30-40dc-bec7-80a81ef8cd1e",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT toStartOfInterval(toDateTime(intDiv(timestamp, 1000000000)), INTERVAL {{.step_seconds}} SECOND) AS ts, severity_text, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') GROUP BY ts, severity_text ORDER BY ts ASC",
+            "legend": "{{severity_text}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {"items": [], "op": "AND"},
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "9da776dd-1802-462b-8248-b7c08692c6da",
+      "title": "Errors",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "7408411d-c44c-4245-8a45-67e647e76e84",
+      "title": "Error Count by App",
+      "description": "Per-app error and fatal log counts, totals, and error percentage.",
+      "panelTypes": "table",
+      "yAxisUnit": "none",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "fe33792c-284a-4052-8e69-0e654a7d71a0",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT attribute_string_app AS app, countIf(severity_text IN ('ERROR','FATAL')) AS errors, count() AS total, round(countIf(severity_text IN ('ERROR','FATAL')) / count() * 100, 2) AS error_pct FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND attribute_string_app != '' GROUP BY app ORDER BY errors DESC LIMIT 20",
+            "legend": "apps",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {"items": [], "op": "AND"},
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "3c6ba066-d1fa-4c0f-b9f3-9dea092f8dc9",
+      "title": "Errors Over Time",
+      "description": "Error and fatal log rate over time, broken down by app.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "a654b58e-fa53-4d81-a13e-2169aeaa77c3",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT toStartOfInterval(toDateTime(intDiv(timestamp, 1000000000)), INTERVAL {{.step_seconds}} SECOND) AS ts, attribute_string_app AS app, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND attribute_string_app != '' GROUP BY ts, app ORDER BY ts ASC",
+            "legend": "{{app}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {"items": [], "op": "AND"},
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "822865e2-3632-41f0-99a0-c55962e12f0d",
+      "title": "Recent Errors",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "420f6548-91dc-4983-92fb-5adf7e1847b5",
+      "title": "Recent Errors",
+      "description": "Latest 50 ERROR and FATAL log entries.",
+      "panelTypes": "list",
+      "yAxisUnit": "none",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "cf64b7a0-ae4b-4ae9-b2a3-ec384a2683be",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT toDateTime(intDiv(timestamp, 1000000000)) AS ts, attribute_string_app AS app, attribute_string_instance AS instance, attribute_string_region AS region, severity_text, body FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') ORDER BY timestamp DESC LIMIT 50",
+            "legend": "recent errors",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {"items": [], "op": "AND"},
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "32af9061-9863-47df-90f9-78f966c32d5e",
+      "title": "Distribution",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "5ddc0d3c-7372-4d95-91c5-54e9e961b1db",
+      "title": "Log Volume by Region",
+      "description": "Total log entries per Fly.io region in the selected time window.",
+      "panelTypes": "bar",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "c5597439-d981-4578-b844-276a615504e9",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT attribute_string_region AS region, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') AND attribute_string_region != '' GROUP BY region ORDER BY value DESC",
+            "legend": "{{region}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {"items": [], "op": "AND"},
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    },
+    {
+      "id": "9605e1d3-97dd-4779-9662-907a2a7c7f16",
+      "title": "Log Volume by Process Group",
+      "description": "Total log entries per Fly.io process group in the selected time window.",
+      "panelTypes": "bar",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {"name": "body", "dataType": "string", "type": ""},
+        {"name": "timestamp", "dataType": "string", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"key": "serviceName", "dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "name", "dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "durationNano", "dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "httpMethod", "dataType": "string", "id": "httpMethod--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"},
+        {"key": "responseStatusCode", "dataType": "string", "id": "responseStatusCode--string--tag--true", "isColumn": true, "isJSON": false, "type": "tag"}
+      ],
+      "query": {
+        "id": "d80a1f9f-ec22-4434-b73a-258d9032b1a0",
+        "queryType": "clickhouse_sql",
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT attribute_string_process_group AS process_group, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') AND attribute_string_process_group != '' GROUP BY process_group ORDER BY value DESC",
+            "legend": "{{process_group}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {"key": "", "dataType": "", "id": "", "isColumn": true, "isJSON": false, "type": ""},
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {"items": [], "op": "AND"},
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {"name": "A", "query": "", "legend": "", "disabled": false}
+        ]
+      }
+    }
+  ],
+  "panelMap": {
+    "5b6d0bb7-4d37-487b-8591-63c704e62949": [],
+    "2fc0cbea-d1b4-4d37-894d-38317937b8d7": [],
+    "d33e1da2-bb66-4c0a-9e18-62ff96807b7c": [],
+    "b1493166-4268-4c2f-bfad-6c60956d3b71": [],
+    "9da776dd-1802-462b-8248-b7c08692c6da": [],
+    "7408411d-c44c-4245-8a45-67e647e76e84": [],
+    "3c6ba066-d1fa-4c0f-b9f3-9dea092f8dc9": [],
+    "822865e2-3632-41f0-99a0-c55962e12f0d": [],
+    "420f6548-91dc-4983-92fb-5adf7e1847b5": [],
+    "32af9061-9863-47df-90f9-78f966c32d5e": [],
+    "5ddc0d3c-7372-4d95-91c5-54e9e961b1db": [],
+    "9605e1d3-97dd-4779-9662-907a2a7c7f16": []
+  },
+  "variables": {
+    "e9a0cc7e-f978-498f-90d6-c298153b5afd": {
+      "id": "e9a0cc7e-f978-498f-90d6-c298153b5afd",
+      "name": "app",
+      "description": "Fly.io app",
+      "type": "QUERY",
+      "queryValue": "SELECT DISTINCT attribute_string_app AS app FROM signoz_logs.distributed_logs WHERE attribute_string_app != '' ORDER BY app LIMIT 1000",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": false,
+      "allSelected": false,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 1,
+      "modificationUUID": "36eb0b2b-afe6-45ed-a67f-aa551eb19152"
+    }
+  }
+}

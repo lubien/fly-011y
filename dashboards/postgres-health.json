@@ -1,0 +1,1873 @@
+{
+  "title": "Fly.io \u2014 Postgres Health",
+  "description": "Fly Postgres reliability, performance, and capacity. Covers connections, transactions, cache hit ratio, replication lag, and deadlocks.",
+  "version": "v4",
+  "tags": [
+    "fly.io",
+    "postgres",
+    "database"
+  ],
+  "uploadedGrafana": false,
+  "layout": [
+    {
+      "i": "38a1eeb0-4a8b-4afb-bce0-0bf184a2e720",
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "d8333838-7e6f-4a04-b3a6-cfa5f975cf38",
+      "x": 0,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "2e4fa2ef-cdea-400b-8794-e282d564c3b4",
+      "x": 3,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "f12bb236-dccf-456a-bd78-7c3d62ff2cdb",
+      "x": 6,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "59a109a1-5306-46c8-a5cf-073f03b54204",
+      "x": 0,
+      "y": 4,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "7bc4ce57-64b0-411f-8a2d-67fbd9c10c94",
+      "x": 0,
+      "y": 5,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "18004cfa-ef7d-45b9-9775-62cfef0b0e4f",
+      "x": 6,
+      "y": 5,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "3c4cfaf4-e1a2-4cce-9c45-3e4efd11d96b",
+      "x": 0,
+      "y": 11,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "7999cab4-05ea-4cf0-bd7c-2f90f2d19cae",
+      "x": 0,
+      "y": 12,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "b10bd8cb-7bc0-4d0c-92fa-6efda3584690",
+      "x": 6,
+      "y": 12,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "c05ed11c-be04-4211-abcf-cc9f6156de43",
+      "x": 0,
+      "y": 18,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "9b318149-2092-483e-86fa-f0fd7c6c09e8",
+      "x": 0,
+      "y": 19,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "34d6a8a3-0b92-4bef-b8b8-2f970910b306",
+      "x": 6,
+      "y": 19,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "63a40e4a-71c8-4b7a-be13-f7fafcac0468",
+      "x": 0,
+      "y": 25,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "90428afd-b577-4835-9c41-24a55ff6d083",
+      "x": 0,
+      "y": 26,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    },
+    {
+      "i": "48c24de1-2f2e-4305-9777-6a1829646b36",
+      "x": 6,
+      "y": 26,
+      "w": 6,
+      "h": 6,
+      "moved": false,
+      "static": false
+    }
+  ],
+  "widgets": [
+    {
+      "id": "38a1eeb0-4a8b-4afb-bce0-0bf184a2e720",
+      "title": "At a Glance",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "d8333838-7e6f-4a04-b3a6-cfa5f975cf38",
+      "title": "Active Connections",
+      "description": "Current number of open Postgres connections.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "0f5d9989-0a2f-4420-99af-9ae213cd314c",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(pg_stat_database_numbackends{app=\"$app\"})",
+            "legend": "connections",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "last",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "2e4fa2ef-cdea-400b-8794-e282d564c3b4",
+      "title": "Cache Hit Ratio %",
+      "description": "Percentage of block reads served from shared buffers.",
+      "panelTypes": "value",
+      "yAxisUnit": "percent",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "47e5abfd-e81c-4af8-8488-bf000e005121",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(pg_stat_database_blks_hit{app=\"$app\"}[5m]))",
+            "legend": "",
+            "disabled": true
+          },
+          {
+            "name": "B",
+            "query": "sum(rate(pg_stat_database_blks_hit{app=\"$app\"}[5m]) + rate(pg_stat_database_blks_read{app=\"$app\"}[5m]))",
+            "legend": "",
+            "disabled": true
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "last",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "B",
+              "expression": "B",
+              "dataSource": "metrics",
+              "disabled": true,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "last",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A/B*100",
+              "legend": "",
+              "disabled": false
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "f12bb236-dccf-456a-bd78-7c3d62ff2cdb",
+      "title": "Replication Lag s",
+      "description": "Maximum replication lag in seconds across all replicas.",
+      "panelTypes": "value",
+      "yAxisUnit": "s",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "680fe9ba-f836-49fe-9b91-f1ab1f9f0295",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "max(pg_replication_lag{app=\"$app\"})",
+            "legend": "lag s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "last",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "59a109a1-5306-46c8-a5cf-073f03b54204",
+      "title": "Connections & Throughput",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "7bc4ce57-64b0-411f-8a2d-67fbd9c10c94",
+      "title": "Active Connections",
+      "description": "Open connections per instance and database.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "d18bf236-1b96-42a9-ab40-98820e365578",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, datname) (pg_stat_database_numbackends{app=\"$app\"})",
+            "legend": "{{exported_instance}} {{datname}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "18004cfa-ef7d-45b9-9775-62cfef0b0e4f",
+      "title": "Transaction Rate",
+      "description": "Commit and rollback rates per database.",
+      "panelTypes": "graph",
+      "yAxisUnit": "reqps",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "783f44cc-01ff-488a-858c-15ac608d8845",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, datname) (rate(pg_stat_database_xact_commit{app=\"$app\"}[5m]))",
+            "legend": "{{datname}} commits/s",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "sum by (exported_instance, datname) (rate(pg_stat_database_xact_rollback{app=\"$app\"}[5m]))",
+            "legend": "{{datname}} rollbacks/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "B",
+              "expression": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "3c4cfaf4-e1a2-4cce-9c45-3e4efd11d96b",
+      "title": "Quality",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "7999cab4-05ea-4cf0-bd7c-2f90f2d19cae",
+      "title": "Cache Hit Ratio %",
+      "description": "Buffer cache hit ratio per database.",
+      "panelTypes": "graph",
+      "yAxisUnit": "percent",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "4aac38e9-453d-455e-bb7e-8f89f02ed3fb",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, datname) (rate(pg_stat_database_blks_hit{app=\"$app\"}[5m]))",
+            "legend": "",
+            "disabled": true
+          },
+          {
+            "name": "B",
+            "query": "sum by (exported_instance, datname) (rate(pg_stat_database_blks_hit{app=\"$app\"}[5m]) + rate(pg_stat_database_blks_read{app=\"$app\"}[5m]))",
+            "legend": "",
+            "disabled": true
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "B",
+              "expression": "B",
+              "dataSource": "metrics",
+              "disabled": true,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A/B*100",
+              "legend": "{{datname}} cache hit %",
+              "disabled": false
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "b10bd8cb-7bc0-4d0c-92fa-6efda3584690",
+      "title": "Rollback Ratio %",
+      "description": "Percentage of transactions that rolled back per database.",
+      "panelTypes": "graph",
+      "yAxisUnit": "percent",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "2bc942fe-29fb-4ec6-95a3-cf3a5319a440",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, datname) (rate(pg_stat_database_xact_rollback{app=\"$app\"}[5m]))",
+            "legend": "",
+            "disabled": true
+          },
+          {
+            "name": "B",
+            "query": "sum by (exported_instance, datname) (rate(pg_stat_database_xact_commit{app=\"$app\"}[5m]) + rate(pg_stat_database_xact_rollback{app=\"$app\"}[5m]))",
+            "legend": "",
+            "disabled": true
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "B",
+              "expression": "B",
+              "dataSource": "metrics",
+              "disabled": true,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A/B*100",
+              "legend": "{{datname}} rollback %",
+              "disabled": false
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "c05ed11c-be04-4211-abcf-cc9f6156de43",
+      "title": "Reliability",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "9b318149-2092-483e-86fa-f0fd7c6c09e8",
+      "title": "Replication Lag",
+      "description": "Replication lag in seconds per replica instance.",
+      "panelTypes": "graph",
+      "yAxisUnit": "s",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "e0087bed-834a-42ca-9167-8a5c8b02728c",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "pg_replication_lag{app=\"$app\"}",
+            "legend": "{{exported_instance}} lag s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "34d6a8a3-0b92-4bef-b8b8-2f970910b306",
+      "title": "Deadlocks",
+      "description": "Rate of deadlock events per database.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "637f93a7-826e-45a1-a589-43589fcceb9e",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, datname) (rate(pg_stat_database_deadlocks{app=\"$app\"}[5m]))",
+            "legend": "{{datname}} deadlocks/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "63a40e4a-71c8-4b7a-be13-f7fafcac0468",
+      "title": "Capacity",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "90428afd-b577-4835-9c41-24a55ff6d083",
+      "title": "Database Size",
+      "description": "Total on-disk size per database.",
+      "panelTypes": "graph",
+      "yAxisUnit": "bytes",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "b2c8b083-65a3-42a8-9991-be9ff8cb5cd3",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, datname) (pg_database_size_bytes{app=\"$app\"})",
+            "legend": "{{datname}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "48c24de1-2f2e-4305-9777-6a1829646b36",
+      "title": "Checkpoint Activity",
+      "description": "Rate of timed vs. requested checkpoint writes.",
+      "panelTypes": "graph",
+      "yAxisUnit": "short",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "thresholds": [],
+      "selectedLogFields": [
+        {
+          "name": "body",
+          "dataType": "string",
+          "type": ""
+        },
+        {
+          "name": "timestamp",
+          "dataType": "string",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "e9729f17-af24-4628-a165-539ef0100d4a",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "rate(pg_stat_bgwriter_checkpoints_timed{app=\"$app\"}[5m])",
+            "legend": "timed checkpoints/s",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "rate(pg_stat_bgwriter_checkpoints_req{app=\"$app\"}[5m])",
+            "legend": "requested checkpoints/s",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "B",
+              "expression": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "avg",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "",
+            "legend": "",
+            "disabled": false
+          }
+        ]
+      }
+    }
+  ],
+  "panelMap": {},
+  "variables": {
+    "013cddba-269e-4530-ae36-f2cd648dba89": {
+      "id": "013cddba-269e-4530-ae36-f2cd648dba89",
+      "name": "app",
+      "description": "Fly Postgres app name",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'app') AS app FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'pg_stat_database_numbackends' GROUP BY app ORDER BY app",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": false,
+      "allSelected": false,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 1,
+      "modificationUUID": "6c1594f6-be02-4568-87ce-88e00b8b7ec8"
+    },
+    "190a4a59-fef6-4005-9f15-303741ab7110": {
+      "id": "190a4a59-fef6-4005-9f15-303741ab7110",
+      "name": "instance",
+      "description": "Fly Postgres VM instance (multi-select)",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'exported_instance') AS instance FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'pg_stat_database_numbackends' AND JSONExtractString(labels, 'app') = '{{.app}}' GROUP BY instance ORDER BY instance",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "allSelected": true,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 2,
+      "modificationUUID": "54da6e27-61ae-4c04-ba02-32857a92eb3c"
+    }
+  }
+}
