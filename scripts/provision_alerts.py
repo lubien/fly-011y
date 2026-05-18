@@ -157,6 +157,63 @@ def pa(name, desc, severity, window, query, op, target, match="at_least_once"):
     )
 
 
+def ta(
+    name,
+    desc,
+    severity,
+    window,
+    filter_expr,
+    aggregation,
+    op,
+    target,
+    match="on_average",
+):
+    """Trace-based alert using the Query Builder.
+
+    filter_expr: SigNoz filter expression, e.g.
+        "serviceName = 'myapp' AND urlPath != '/live/longpoll'"
+    aggregation: e.g. "p99(durationNano)" — result is in nanoseconds.
+    target: threshold in nanoseconds (e.g. 2_500_000_000 = 2.5 s).
+    """
+    return _rule(
+        name,
+        desc,
+        severity,
+        "TRACES_BASED_ALERT",
+        "threshold_rule",
+        window,
+        {
+            "compositeQuery": {
+                "queryType": "builder",
+                "panelType": "graph",
+                "unit": "",
+                "queries": [
+                    {
+                        "type": "builder_query",
+                        "spec": {
+                            "signal": "traces",
+                            "name": "A",
+                            "disabled": False,
+                            "stepInterval": "60s",
+                            "filter": {"expression": filter_expr},
+                            "aggregations": [
+                                {"expression": aggregation, "alias": "value"}
+                            ],
+                            "groupBy": [],
+                        },
+                    }
+                ],
+            },
+            "op": op,
+            "target": target,
+            "matchType": match,
+            "selectedQueryName": "A",
+            "targetUnit": "ns",
+            "requireMinPoints": False,
+        },
+    )
+
+
 def la(name, desc, severity, window, filter_expr, threshold, match="at_least_once"):
     """Log-count-based alert. Fires when count of matching logs > threshold."""
     return _rule(
@@ -392,7 +449,39 @@ ALERTS = [
         0.5,
         "on_average",
     ),
-    # ══════════════════════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════════════════════════
+    # 3b. Per-service latency via OTel traces (path-aware, more precise)
+    # ══════════════════════════════════════════════════════════════════════════════
+    # For apps instrumented with OpenTelemetry, trace-based alerts give
+    # per-route P99 so long-polling or streaming endpoints can be excluded.
+    # Add one block per OTel-instrumented app; duplicate and adjust as needed.
+    # Long-poll paths are excluded via the filter so they don’t inflate P99.
+    ta(
+        "[3b.1] devsnorte-plausible — P99 Latency (OTel, excl. long-poll)",
+        "P99 response time for devsnorte-plausible exceeds 2.5 s "
+        "(streaming/long-poll endpoints excluded). "
+        "Based on OTel trace spans — more accurate than Fly edge metrics.",
+        "critical",
+        "5m0s",
+        "serviceName = 'devsnorte-plausible' AND urlPath != '/live/longpoll'",
+        "p99(durationNano)",
+        "above",
+        2_500_000_000,  # 2.5 s in nanoseconds
+        "on_average",
+    ),
+    ta(
+        "[3b.2] devsnorte-plausible — P99 Latency Warning (OTel, excl. long-poll)",
+        "P99 response time for devsnorte-plausible exceeds 1 s for 10 minutes "
+        "(streaming/long-poll endpoints excluded).",
+        "warning",
+        "10m0s",
+        "serviceName = 'devsnorte-plausible' AND urlPath != '/live/longpoll'",
+        "p99(durationNano)",
+        "above",
+        1_000_000_000,  # 1 s in nanoseconds
+        "on_average",
+    ),
+    # ══════════════════════════════════════════════════════════════════════════════
     # 4. Machine Crashes and OOM
     # ══════════════════════════════════════════════════════════════════════════
     pa(
