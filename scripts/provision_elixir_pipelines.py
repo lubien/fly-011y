@@ -18,6 +18,7 @@ Idempotent: re-running removes the old "elixir-logs" pipeline and re-creates it.
 See docs/signoz-ui-log-pipelines.md for the full explanation.
 """
 
+import getpass
 import json
 import os
 import sys
@@ -61,7 +62,7 @@ if not SIGNOZ_URL:
 TOKEN = os.environ.get("SIGNOZ_TOKEN", "")
 if not TOKEN:
     email = input("SigNoz email: ")
-    password = input("SigNoz password: ")
+    password = getpass.getpass("SigNoz password: ")
     data = json.dumps({"email": email, "password": password}).encode()
     req = Request(
         f"{SIGNOZ_URL}/api/v1/login",
@@ -71,9 +72,19 @@ if not TOKEN:
     )
     try:
         with urlopen(req) as resp:
-            TOKEN = json.loads(resp.read())["accessJwt"]
+            body = resp.read()
     except HTTPError as exc:
-        print(f"Login failed ({exc.code}): {exc.read().decode()}", file=sys.stderr)
+        body = exc.read()
+        print(
+            f"Login failed (HTTP {exc.code}): {body.decode(errors='replace')}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    try:
+        TOKEN = json.loads(body)["accessJwt"]
+    except (json.JSONDecodeError, KeyError) as exc:
+        print(f"Login response unexpected ({exc}):", file=sys.stderr)
+        print(body.decode(errors="replace"), file=sys.stderr)
         sys.exit(1)
 
 HEADERS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
