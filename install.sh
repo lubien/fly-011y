@@ -597,7 +597,7 @@ deploy_log_shipper() {
   access_token=$(fly_cmd tokens create readonly --name "fly-o11y" --org "${org_slug}") || \
     die "Failed to create access token for org '${org_slug}'."
 
-  info "Deploying log shipper for '${org_slug}' (this may take a few minutes)…"
+  info "Creating Fly app for '${org_slug}'…"
   fly_cmd launch \
     -c "${toml_file}" \
     --copy-config \
@@ -607,6 +607,16 @@ deploy_log_shipper() {
     --secret "SIGNOZ_INGESTION_URL=${ingestion_url}" \
     --secret "SIGNOZ_INGESTION_KEY=${ingestion_key}" \
     --org "${org_slug}" \
+    --no-public-ips \
+    --no-deploy \
+    --yes
+
+  # Ensure at least 2 machines run for HA (NATS queue group deduplication)
+  sed -i 's/min_machines_running = 0/min_machines_running = 2/' "${toml_file}"
+
+  info "Deploying log shipper for '${org_slug}' (this may take a few minutes)…"
+  fly_cmd deploy \
+    -c "${toml_file}" \
     --no-public-ips \
     --yes
 
