@@ -10,7 +10,12 @@ source = '''
 # separators here, so Vector outputs them as-is and httplogreceiver stores
 # them as the attribute names fly.app.name, fly.region, etc.
 if is_object(.fly) {
-  if is_string(.fly.app.instance) { .resources = {"host.name": .fly.app.instance} }
+  if is_string(.fly.app.instance) {
+    .resources = {
+      "host.name":    .fly.app.instance,
+      "service.name": .fly.app.name
+    }
+  }
   . = merge(., compact({
     "app":           .fly.app.name,
     "instance":      .fly.app.instance,
