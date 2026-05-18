@@ -106,6 +106,12 @@ def api_post(path: str, payload: dict) -> dict:
 # Source of truth: docs/elixir-log-parsing.md
 # \xb5 = µ (U+00B5 MICRO SIGN) kept as ASCII escape
 
+# Matches the [level] bracket in ANY Elixir Logger line, e.g.:
+#   01:12:14.418 [error] Postgrex.Protocol ...
+#   21:19:24.401 request_id=X ... [info] GET /path
+# Used as a baseline severity pass so generic app logs are not stuck at INFO.
+RE_ELIXIR_LEVEL = r"\[(?P<log_level>debug|info|warn(?:ing)?|error|critical|notice)\]"
+
 # Matches any Plug/Phoenix log line that carries OTel trace context, e.g.:
 #   21:19:24.401 request_id=X trace_id=a793410e0269ca86... span_id=53ea3ddf... [info] ...
 RE_TRACE_CONTEXT = (
@@ -187,10 +193,11 @@ def severity(name: str) -> dict:
         "enabled": True,
         "parse_from": "attributes.log_level",
         "mapping": {
-            "info": ["info"],
-            "warn": ["warning"],
-            "error": ["error"],
             "debug": ["debug"],
+            "info": ["info"],
+            "warn": ["warn", "warning", "notice"],  # Elixir uses both warn and warning
+            "error": ["error"],
+            "fatal": ["critical"],
         },
         "output": "",
     }
@@ -235,7 +242,12 @@ def chain(ops: list[dict]) -> list[dict]:
 def make_pipeline() -> dict:
     processors = chain(
         [
-            # OTel trace context — must come first
+            # General level extraction — baseline severity for ALL Elixir log lines.
+            # Runs first so generic app logs (non-request) get the right severity.
+            # Specific parsers below override log_level + severity when they match.
+            regex("General: level regex", RE_ELIXIR_LEVEL),
+            severity("General: severity"),
+            # OTel trace context — must come before other specific parsers
             regex("Trace Context: regex", RE_TRACE_CONTEXT),
             trace_context_parser("Trace Context: trace_parser"),
             # Plug.Logger: request start
