@@ -240,20 +240,20 @@ configure() {
       fi
     fi
 
-    if [ "${STDIN_IS_TTY}" -eq 1 ]; then
-      # ── Interactive mode ──────────────────────────────────────────────────
-      echo ""
-      while [ -z "${signoz_external_url}" ]; do
-        printf "  Sprite public URL (e.g., https://NAME.sprites.app): "
-        read -r signoz_external_url || signoz_external_url=""
-        [ -n "${signoz_external_url}" ] || warn "Sprite public URL is required."
-      done
-
-    else
-      # ── Pipe / non-interactive mode ───────────────────────────────────────────
-      [ -n "${signoz_external_url}" ] || \
-        die "Could not auto-detect Sprite URL and \$SIGNOZ_EXTERNAL_URL is not set." \
-            "Prefix the curl command: SIGNOZ_EXTERNAL_URL=https://... curl ... | bash"
+    # ── Prompt if still empty ───────────────────────────────────────────────────
+    # Read from /dev/tty so this works even when stdin is the curl pipe.
+    if [ -z "${signoz_external_url}" ]; then
+      if [ -e /dev/tty ]; then
+        while [ -z "${signoz_external_url}" ]; do
+          printf "  Sprite public URL (e.g., https://NAME.sprites.app): " >/dev/tty
+          read -r signoz_external_url </dev/tty || signoz_external_url=""
+          [ -n "${signoz_external_url}" ] || \
+            printf "  Sprite public URL is required.\n" >/dev/tty
+        done
+      else
+        die "Could not detect Sprite URL." \
+            "Set SIGNOZ_EXTERNAL_URL=https://... and re-run."
+      fi
     fi
 
     # Strip accidental trailing slash from the URL
