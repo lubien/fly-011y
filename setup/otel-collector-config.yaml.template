@@ -217,26 +217,7 @@ processors:
           - action: experimental_scale_value
             experimental_scale: 512
 
-  # 5. Set service.name = app on every Fly Prometheus metric so each Fly.io app
-  #    appears as a named service in SigNoz's services catalog and can be correlated
-  #    with logs and traces. Runs at both resource and datapoint level because the
-  #    Prometheus receiver places `app` as a datapoint attribute by default.
-  # Splits the single Prometheus-receiver resource (one per scrape job) into
-  # separate resources per (app, region) so each Fly.io app gets its own
-  # resource. Must run BEFORE transform/fly-set-service-name.
-  groupbyattrs/fly-app-as-service:
-    keys: [app, region]
-
-  transform/fly-set-service-name:
-    error_mode: ignore
-    metric_statements:
-      # After groupbyattrs, `app` is a resource attribute — read and copy it.
-      # This gives each Fly app its own service.name in SigNoz's service catalog.
-      - context: resource
-        statements:
-          - set(attributes["service.name"], attributes["app"]) where attributes["app"] != nil
-
-  # 6. Copy host.name from resource attributes → data-point attributes.
+  # 5. Copy host.name from resource attributes → data-point attributes.
   #    SigNoz queries host.name as AttributeKeyTypeResource (resource attr) AND as a
   #    plain label (data-point attr). Having it in both guarantees discovery works.
   #    resource.attributes[key] is valid in OTTL datapoint context.
@@ -349,7 +330,7 @@ service:
       exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
     metrics/prometheus:
       receivers: [prometheus]
-      processors: [groupbyattrs/fly-app-as-service, transform/fly-set-service-name, batch]
+      processors: [batch]
       exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
     # Fly.io VMs as SigNoz hosts — transforms fly_instance_* → system.* OTel names
     # The prometheus receiver fans out to both this pipeline and metrics/prometheus above
@@ -357,9 +338,8 @@ service:
       receivers: [prometheus]
       processors:
         - filter/fly-instance-only
-        - groupbyattrs/fly-promote-to-resource  # promotes exported_instance, app, region
+        - groupbyattrs/fly-promote-to-resource
         - resource/fly-set-hostname
-        - transform/fly-set-service-name         # app is already a resource attr here
         - metricstransform/fly-to-system
         - transform/fly-copy-hostname-to-dp
         - filter/otel-system-only
