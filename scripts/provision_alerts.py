@@ -450,37 +450,22 @@ ALERTS = [
         "on_average",
     ),
     # ══════════════════════════════════════════════════════════════════════════════
-    # 3b. Per-service latency via OTel traces (path-aware, more precise)
+    # 3b. Per-service OTel trace latency — add your own below
     # ══════════════════════════════════════════════════════════════════════════════
-    # For apps instrumented with OpenTelemetry, trace-based alerts give
-    # per-route P99 so long-polling or streaming endpoints can be excluded.
-    # Add one block per OTel-instrumented app; duplicate and adjust as needed.
-    # Long-poll paths are excluded via the filter so they don’t inflate P99.
-    ta(
-        "[3b.1] devsnorte-plausible — P99 Latency (OTel, excl. long-poll)",
-        "P99 response time for devsnorte-plausible exceeds 2.5 s "
-        "(streaming/long-poll endpoints excluded). "
-        "Based on OTel trace spans — more accurate than Fly edge metrics.",
-        "critical",
-        "5m0s",
-        "serviceName = 'devsnorte-plausible' AND urlPath != '/live/longpoll'",
-        "p99(durationNano)",
-        "above",
-        2_500_000_000,  # 2.5 s in nanoseconds
-        "on_average",
-    ),
-    ta(
-        "[3b.2] devsnorte-plausible — P99 Latency Warning (OTel, excl. long-poll)",
-        "P99 response time for devsnorte-plausible exceeds 1 s for 10 minutes "
-        "(streaming/long-poll endpoints excluded).",
-        "warning",
-        "10m0s",
-        "serviceName = 'devsnorte-plausible' AND urlPath != '/live/longpoll'",
-        "p99(durationNano)",
-        "above",
-        1_000_000_000,  # 1 s in nanoseconds
-        "on_average",
-    ),
+    # Use ta() for any OTel-instrumented app that needs path-level P99.
+    # Unlike the Fly edge metric alerts above, these can exclude specific
+    # endpoints (long-poll, webhooks, SSE) that would otherwise inflate the tail.
+    #
+    # Example — copy and adjust for each app:
+    #
+    # ta(
+    #     "[3b.1] my-app — P99 Latency (excl. long-poll)",
+    #     "P99 > 2.5s on my-app excluding streaming endpoints.",
+    #     "critical", "5m0s",
+    #     "serviceName = 'my-app' AND urlPath != '/live/longpoll'",
+    #     "p99(durationNano)",
+    #     "above", 2_500_000_000,  # nanoseconds
+    # ),
     # ══════════════════════════════════════════════════════════════════════════════
     # 4. Machine Crashes and OOM
     # ══════════════════════════════════════════════════════════════════════════
