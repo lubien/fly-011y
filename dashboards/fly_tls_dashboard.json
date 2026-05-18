@@ -1,0 +1,538 @@
+{
+  "description": "",
+  "image": "",
+  "layout": [
+    {
+      "h": 7,
+      "i": "p_tls_hs",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 7,
+      "i": "p_tls_ht",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 12,
+      "y": 0
+    },
+    {
+      "h": 7,
+      "i": "p_tls_err",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 7
+    },
+    {
+      "h": 7,
+      "i": "p_tls_sni",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 12,
+      "y": 7
+    },
+    {
+      "h": 7,
+      "i": "p_tls_ip",
+      "moved": false,
+      "static": false,
+      "w": 24,
+      "x": 0,
+      "y": 14
+    }
+  ],
+  "panelMap": {},
+  "tags": [
+    "fly.io"
+  ],
+  "title": "Fly.io \u2014 TLS",
+  "uploadedGrafana": false,
+  "uuid": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "variables": {
+    "e5f6a7b8-c9d0-1234-efab-345678901234": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "",
+      "dynamicVariablesAttribute": "app",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "key": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "modificationUUID": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "multiSelect": false,
+      "name": "app",
+      "order": 0,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    }
+  },
+  "version": "v5",
+  "widgets": [
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "",
+      "fillSpans": false,
+      "id": "p_tls_hs",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "fly_edge_tls_handshake_time_seconds_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": {
+                "expression": "app IN $app"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "app--string--tag",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "app",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{app}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "source": "",
+              "stepInterval": 0
+            }
+          ],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": true,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "77777777-7777-7777-7777-777777777777",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TLS Handshakes/s",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "",
+      "fillSpans": false,
+      "id": "p_tls_ht",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "filter": {
+                "expression": "app IN $app"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "source": "",
+              "stepInterval": 0
+            }
+          ],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": true,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "88888888-8888-8888-8888-888888888888",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "p50",
+            "name": "A",
+            "query": "histogram_quantile(0.5, sum(rate(fly_edge_tls_handshake_time_seconds_bucket{app=~\"$app\"}[5m])) by (le))"
+          },
+          {
+            "disabled": false,
+            "legend": "p90",
+            "name": "B",
+            "query": "histogram_quantile(0.9, sum(rate(fly_edge_tls_handshake_time_seconds_bucket{app=~\"$app\"}[5m])) by (le))"
+          },
+          {
+            "disabled": false,
+            "legend": "p99",
+            "name": "C",
+            "query": "histogram_quantile(0.99, sum(rate(fly_edge_tls_handshake_time_seconds_bucket{app=~\"$app\"}[5m])) by (le))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TLS Handshake Time p50/p90/p99",
+      "yAxisUnit": "s"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "",
+      "fillSpans": false,
+      "id": "p_tls_err",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "fly_edge_tls_handshake_errors",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "",
+                  "timeAggregation": "increase"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": {
+                "expression": "app IN $app"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "servername--string--tag",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "servername",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{servername}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "source": "",
+              "stepInterval": 0
+            }
+          ],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": true,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "99999999-9999-9999-9999-999999999999",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TLS Handshake Errors",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "",
+      "fillSpans": false,
+      "id": "p_tls_sni",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "fly_edge_tls_sni_limit_reached_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "",
+                  "timeAggregation": "increase"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": {
+                "expression": "app IN $app"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "servername--string--tag",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "servername",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{servername}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "source": "",
+              "stepInterval": 0
+            }
+          ],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": true,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "SNI Limit Reached",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "",
+      "fillSpans": false,
+      "id": "p_tls_ip",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "fly_edge_tls_ip_limit_reached_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "",
+                  "timeAggregation": "increase"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": {
+                "expression": "app IN $app"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "ip--string--tag",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "ip",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{ip}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "source": "",
+              "stepInterval": 0
+            }
+          ],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": true,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "IP Limit Reached",
+      "yAxisUnit": "none"
+    }
+  ]
+}
