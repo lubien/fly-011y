@@ -29,12 +29,12 @@ receivers:
                 job_name: otel-collector
 processors:
   batch:
-    send_batch_size: 10000
-    send_batch_max_size: 11000
+    send_batch_size: 5000       # halved — smaller INSERTs create fewer parts under load
+    send_batch_max_size: 6000
     timeout: 10s
   batch/meter:
-    send_batch_max_size: 25000
-    send_batch_size: 20000
+    send_batch_max_size: 12500
+    send_batch_size: 10000
     timeout: 1s
   resourcedetection:
     # Using OTEL_RESOURCE_ATTRIBUTES envvar, env detector adds custom labels.
@@ -305,7 +305,7 @@ exporters:
     dsn: tcp://127.0.0.1:9000/signoz_meter
     timeout: 45s
     sending_queue:
-      enabled: false
+      enabled: false  # meter exporter manages its own queue
   metadataexporter:
     cache:
       provider: in_memory
