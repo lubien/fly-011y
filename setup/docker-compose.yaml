@@ -133,10 +133,6 @@ services:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
       - ./opamp-config.yaml:/etc/manager-config.yaml
       - ./otel:/etc/otel
-      # Host filesystem mounts for the hostmetrics receiver.
-      - /proc:/hostfs/proc:ro
-      - /sys:/hostfs/sys:ro
-      - /:/hostfs:ro
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=host.name=sprite,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
@@ -183,6 +179,28 @@ services:
     depends_on:
       signoz:
         condition: service_started
+
+  # Lightweight sidecar that collects Sprite host metrics (CPU, memory, disk,
+  # network) and forwards them via OTLP to signoz-otel-collector on localhost.
+  # Uses otelcol-contrib because the SigNoz collector image omits hostmetrics.
+  host-metrics:
+    image: otel/opentelemetry-collector-contrib:0.144.0
+    container_name: signoz-host-metrics
+    network_mode: "host"
+    restart: unless-stopped
+    depends_on:
+      - otel-collector
+    volumes:
+      - ./host-metrics-config.yaml:/etc/otelcol-contrib/config.yaml
+      - /proc:/hostfs/proc:ro
+      - /sys:/hostfs/sys:ro
+      - /:/hostfs:ro
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=host.name=sprite,os.type=linux
+    logging:
+      options:
+        max-size: 10m
+        max-file: "2"
 
 networks:
   signoz-net:
