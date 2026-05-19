@@ -86,6 +86,7 @@ services:
     container_name: signoz-clickhouse
     ports:
       - "9000:9000"
+      - "127.0.0.1:9363:9363" # Prometheus metrics for otel-collector scraping
     volumes:
       - ./clickhouse/config.xml:/etc/clickhouse-server/config.xml
       - ./clickhouse/users.xml:/etc/clickhouse-server/users.xml
