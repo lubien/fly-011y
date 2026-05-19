@@ -188,7 +188,7 @@
           },
           {
             "name": "B",
-            "query": "avg by (machine, app, region) (label_replace((fly_instance_memory_mem_total - fly_instance_memory_mem_available) / fly_instance_memory_mem_total * 100, \"machine\", \"$1\", \"exported_instance\", \"(.*)\"))",
+            "query": "(1 - avg by (machine, app, region) (label_replace(fly_instance_memory_mem_available, \"machine\", \"$1\", \"exported_instance\", \"(.*)\")) / avg by (machine, app, region) (label_replace(fly_instance_memory_mem_total, \"machine\", \"$1\", \"exported_instance\", \"(.*)\")))*100",
             "legend": "Memory %",
             "disabled": false
           },
