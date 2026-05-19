@@ -133,8 +133,11 @@ services:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
       - ./opamp-config.yaml:/etc/manager-config.yaml
       - ./otel:/etc/otel
+      # Host filesystem mounts for the hostmetrics receiver.
+      # ro + rslave keeps the container read-only and propagation safe.
+      - /:/hostfs:ro,rslave
     environment:
-      - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
+      - OTEL_RESOURCE_ATTRIBUTES=host.name=sprite,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
       - SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN=tcp://127.0.0.1:9000
       - SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_CLUSTER=cluster

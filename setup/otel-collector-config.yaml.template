@@ -6,6 +6,39 @@ connectors:
       - name: deployment.environment
       - name: host.name
 receivers:
+  # Sprite host system metrics — CPU, memory, disk, network, filesystem.
+  # Reads from /hostfs which is the host root mounted read-only in docker-compose.
+  # These populate SigNoz's Infrastructure → Hosts view for the Sprite itself.
+  hostmetrics:
+    root_path: /hostfs
+    collection_interval: 30s
+    scrapers:
+      cpu:
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+      memory:
+        metrics:
+          system.memory.utilization:
+            enabled: true
+      disk: {}
+      filesystem:
+        exclude_mount_points:
+          mount_points: [/hostfs/proc, /hostfs/sys, /hostfs/dev, /dev]
+          match_type: strict
+        exclude_fs_types:
+          fs_types: [autofs, binfmt_misc, bpf, cgroup2, configfs, debugfs,
+                     devpts, devtmpfs, fusectl, hugetlbfs, iso9660, mqueue,
+                     nsfs, overlay, proc, procfs, pstore, rpc_pipefs, securityfs,
+                     selinuxfs, squashfs, sysfs, tracefs]
+          match_type: strict
+      network:
+        exclude:
+          interfaces: [lo]
+          match_type: strict
+      load: {}
+      processes: {}
+
   otlp:
     protocols:
       grpc:
@@ -355,6 +388,11 @@ service:
         - transform/fly-copy-hostname-to-dp
         - filter/otel-system-only
         - batch
+      exporters: [signozclickhousemetrics, metadataexporter]
+    # Sprite host infrastructure metrics — appears in SigNoz Hosts UI as 'sprite'
+    metrics/sprite-host:
+      receivers: [hostmetrics]
+      processors: [resourcedetection, batch]
       exporters: [signozclickhousemetrics, metadataexporter]
     logs:
       receivers: [otlp, httplogreceiver/json]
