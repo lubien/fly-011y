@@ -250,6 +250,13 @@ processors:
       - context: datapoint
         statements:
           - set(attributes["host.name"], resource.attributes["host.name"])
+          # Also copy grouping labels to data-point attributes so the Query
+          # Builder can discover and group by them (it surfaces both resource
+          # and data-point attributes, but data-point labels are more reliably
+          # indexed as selectable dimensions).
+          - set(attributes["exported_instance"], resource.attributes["exported_instance"])
+          - set(attributes["app"], resource.attributes["app"])
+          - set(attributes["region"], resource.attributes["region"])
 
   # 6. Drop the fly_instance_* originals; keep only system.* for the Hosts UI pipeline
   filter/otel-system-only:
@@ -260,6 +267,121 @@ processors:
         metric_names: ["^system\\..*"]
 
   # ── End Fly.io → SigNoz Hosts UI ──────────────────────────────────────────
+
+  # ── Fly.io CPU & IOWait Utilisation Gauges ───────────────────────────────
+  # fly_instance_cpu is a monotonic counter (centiseconds per cpu_id × mode).
+  # The SigNoz Query Builder has no rate() time aggregation, so we pre-compute
+  # per-instance utilisation as 0-100 Gauge metrics at ingest time.
+  #
+  # Pipeline:
+  #   cumulativetodelta → aggregate across cpu_id → subtract idle → divide
+  #   → scale ×100 → stored as fly_instance_cpu_utilization (0-100 Gauge)
+  #                      and fly_instance_iowait_utilization (0-100 Gauge)
+
+  # 1. Isolate fly_instance_cpu; every other pipeline gets a separate copy
+  #    from the prometheus receiver fan-out so there is no interference.
+  filter/fly-cpu-only:
+    error_mode: ignore
+    metrics:
+      include:
+        match_type: strict
+        metric_names: ["fly_instance_cpu"]
+
+  # 2. Convert cumulative counter → per-scrape-interval delta.
+  #    max_stale: after 10 min of silence the previous value is forgotten so a
+  #    restarted machine begins cleanly (avoids a giant spike on first sample).
+  cumulativetodelta/fly-cpu:
+    max_stale: 10m
+    include:
+      match_type: strict
+      metrics:
+        - "fly_instance_cpu"
+
+  # 3. From the per-(cpu_id, mode) deltas produce three per-(instance, app, region)
+  #    sums that later arithmetic steps can reference by name.
+  metricstransform/fly-cpu-deltas:
+    transforms:
+      # All modes, all cpu_ids → one total-CPU-time value per instance
+      - include: fly_instance_cpu
+        match_type: strict
+        action: insert
+        new_name: fly_instance_cpu_delta_total
+        operations:
+          - action: aggregate_labels
+            label_set: [exported_instance, app, region]
+            aggregation_type: sum
+      # Idle mode only — will be subtracted to get active time
+      - include: fly_instance_cpu
+        match_type: strict
+        experimental_match_labels: {mode: "idle"}
+        action: insert
+        new_name: fly_instance_cpu_delta_idle
+        operations:
+          - action: aggregate_labels
+            label_set: [exported_instance, app, region]
+            aggregation_type: sum
+      # IOWait mode only
+      - include: fly_instance_cpu
+        match_type: strict
+        experimental_match_labels: {mode: "iowait"}
+        action: insert
+        new_name: fly_instance_cpu_delta_iowait
+        operations:
+          - action: aggregate_labels
+            label_set: [exported_instance, app, region]
+            aggregation_type: sum
+
+  # 4. Compute active delta and both utilisation ratios.
+  #    metricsgeneration always produces Gauge output.
+  #    Rules are evaluated in order; later rules can reference metrics
+  #    produced by earlier rules within the same pass.
+  metricsgeneration/fly-cpu-utilization:
+    rules:
+      - name: fly_instance_cpu_delta_active
+        unit: "cs"
+        type: calculate
+        metric1: fly_instance_cpu_delta_total
+        metric2: fly_instance_cpu_delta_idle
+        operation: subtract
+      - name: fly_instance_cpu_utilization
+        unit: "1"
+        type: calculate
+        metric1: fly_instance_cpu_delta_active
+        metric2: fly_instance_cpu_delta_total
+        operation: divide
+      - name: fly_instance_iowait_utilization
+        unit: "1"
+        type: calculate
+        metric1: fly_instance_cpu_delta_iowait
+        metric2: fly_instance_cpu_delta_total
+        operation: divide
+
+  # 5. Scale 0-1 → 0-100 so columnUnits:"percent" in the Query Builder
+  #    renders "42%" rather than "0.42%".
+  metricstransform/fly-cpu-scale:
+    transforms:
+      - include: fly_instance_cpu_utilization
+        match_type: strict
+        action: update
+        operations:
+          - action: experimental_scale_value
+            experimental_scale: 100
+      - include: fly_instance_iowait_utilization
+        match_type: strict
+        action: update
+        operations:
+          - action: experimental_scale_value
+            experimental_scale: 100
+
+  # 6. Drop all intermediate work metrics; keep only the finished gauges.
+  filter/fly-cpu-util-only:
+    error_mode: ignore
+    metrics:
+      include:
+        match_type: regexp
+        metric_names: ["^fly_instance_(cpu|iowait)_utilization$"]
+
+  # ── End Fly.io CPU & IOWait Utilisation Gauges ────────────────────────────
 
   signozspanmetrics/delta:
     metrics_exporter: signozclickhousemetrics
@@ -389,6 +511,24 @@ service:
         - resource/fly-set-hostname
         - batch
       exporters: [otlp/host-metrics-sidecar]
+    # Fly.io per-instance CPU and IOWait utilisation gauges.
+    # Pre-computes rate() from the cumulative fly_instance_cpu counter and
+    # stores the result as 0-100 Gauge metrics so the SigNoz Query Builder
+    # can query them with "latest" time aggregation (no rate() needed).
+    metrics/fly-cpu-utilization:
+      receivers: [prometheus]
+      processors:
+        - filter/fly-cpu-only
+        - cumulativetodelta/fly-cpu
+        - metricstransform/fly-cpu-deltas
+        - metricsgeneration/fly-cpu-utilization
+        - metricstransform/fly-cpu-scale
+        - filter/fly-cpu-util-only
+        - groupbyattrs/fly-promote-to-resource
+        - resource/fly-set-hostname
+        - transform/fly-copy-hostname-to-dp
+        - batch
+      exporters: [signozclickhousemetrics, metadataexporter]
     logs:
       receivers: [otlp, httplogreceiver/json]
       processors: [batch]

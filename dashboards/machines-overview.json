@@ -37,7 +37,7 @@
     {
       "id": "a1b2c3d4-e5f6-4890-abcd-ef1234567890",
       "title": "Machine Resource Usage",
-      "description": "One row per active Fly.io machine across all apps. The machine column is the Fly.io instance ID (exported_instance renamed via label_replace). CPU %, Memory %, and IO Wait % are derived from fly_instance_cpu and fly_instance_memory_* metrics. Load Avg is the 1-minute load average. Only machines that reported metrics within the selected time window are shown.",
+      "description": "One row per active Fly.io machine across all apps. CPU % and IO Wait % come from pre-computed gauges (fly_instance_cpu_utilization, fly_instance_iowait_utilization) built in the OTel pipeline. Memory % is derived from fly_instance_memory_mem_available / fly_instance_memory_mem_total. Load Avg is the 1-minute load average.",
       "panelTypes": "table",
       "yAxisUnit": "none",
       "timePreferance": "GLOBAL_TIME",
@@ -53,8 +53,11 @@
       "bucketWidth": 0,
       "columnUnits": {
         "A": "percent",
-        "B": "percent",
-        "C": "percent"
+        "D": "percent",
+        "F1": "percent"
+      },
+      "customColTitles": {
+        "exported_instance": "machine"
       },
       "thresholds": [
         {
@@ -90,7 +93,7 @@
           "thresholdColor": "#e84749",
           "thresholdFormat": "Background",
           "thresholdLabel": "Critical",
-          "thresholdTableOptions": "B",
+          "thresholdTableOptions": "F1",
           "selectedGraph": "table"
         },
         {
@@ -102,7 +105,7 @@
           "thresholdColor": "#d89614",
           "thresholdFormat": "Background",
           "thresholdLabel": "Warning",
-          "thresholdTableOptions": "B",
+          "thresholdTableOptions": "F1",
           "selectedGraph": "table"
         },
         {
@@ -114,7 +117,7 @@
           "thresholdColor": "#e84749",
           "thresholdFormat": "Background",
           "thresholdLabel": "Critical",
-          "thresholdTableOptions": "C",
+          "thresholdTableOptions": "D",
           "selectedGraph": "table"
         },
         {
@@ -126,7 +129,7 @@
           "thresholdColor": "#d89614",
           "thresholdFormat": "Background",
           "thresholdLabel": "Warning",
-          "thresholdTableOptions": "C",
+          "thresholdTableOptions": "D",
           "selectedGraph": "table"
         }
       ],
@@ -181,7 +184,7 @@
           {
             "id": "cl-open-machine",
             "label": "Open Machine in Fly.io \u2197",
-            "url": "https://fly.io/apps/{{_app}}/machines/{{_machine}}"
+            "url": "https://fly.io/apps/{{_app}}/machines/{{_exported_instance}}"
           },
           {
             "id": "cl-open-app",
@@ -191,37 +194,22 @@
           {
             "id": "cl-infra-monitoring",
             "label": "Infrastructure Monitoring",
-            "url": "/infrastructure-monitoring/hosts?hostName={{_machine}}"
+            "url": "/infrastructure-monitoring/hosts?hostName={{_exported_instance}}"
           }
         ]
       },
       "query": {
         "id": "c3d4e5f6-a7b8-4012-cdef-012345678901",
-        "queryType": "promql",
+        "queryType": "builder",
         "promql": [
-          {
-            "name": "A",
-            "query": "sum by (machine, app, region) (label_replace(rate(fly_instance_cpu{mode!=\"idle\"}[5m]), \"machine\", \"$1\", \"exported_instance\", \"(.*)\")) / sum by (machine, app, region) (label_replace(rate(fly_instance_cpu[5m]), \"machine\", \"$1\", \"exported_instance\", \"(.*)\")) * 100",
-            "legend": "CPU %",
-            "disabled": false
-          },
-          {
-            "name": "B",
-            "query": "(1 - avg by (machine, app, region) (label_replace(fly_instance_memory_mem_available, \"machine\", \"$1\", \"exported_instance\", \"(.*)\")) / avg by (machine, app, region) (label_replace(fly_instance_memory_mem_total, \"machine\", \"$1\", \"exported_instance\", \"(.*)\")))*100",
-            "legend": "Memory %",
-            "disabled": false
-          },
-          {
-            "name": "C",
-            "query": "sum by (machine, app, region) (label_replace(rate(fly_instance_cpu{mode=\"iowait\"}[5m]), \"machine\", \"$1\", \"exported_instance\", \"(.*)\")) / sum by (machine, app, region) (label_replace(rate(fly_instance_cpu[5m]), \"machine\", \"$1\", \"exported_instance\", \"(.*)\")) * 100",
-            "legend": "IO Wait %",
-            "disabled": false
-          },
+          { "name": "A", "query": "", "legend": "CPU %", "disabled": true },
+          { "name": "B", "query": "", "legend": "Memory %", "disabled": true },
+          { "name": "C", "query": "", "legend": "IO Wait %", "disabled": true },
           {
             "name": "D",
-            "query": "avg by (machine, app, region) (label_replace(fly_instance_load_average{minutes=\"1\"}, \"machine\", \"$1\", \"exported_instance\", \"(.*)\"))",
+            "query": "",
             "legend": "Load Avg (1m)",
-            "disabled": false
+            "disabled": true
           }
         ],
         "builder": {
@@ -232,19 +220,44 @@
               "dataSource": "metrics",
               "disabled": false,
               "aggregateAttribute": {
-                "key": "",
-                "dataType": "",
-                "id": "",
-                "isColumn": true,
+                "key": "fly_instance_cpu_utilization",
+                "dataType": "float64",
+                "id": "fly_instance_cpu_utilization--float64--Gauge--false",
+                "isColumn": false,
                 "isJSON": false,
-                "type": ""
+                "type": "Gauge"
               },
-              "aggregateOperator": "noop",
-              "timeAggregation": "rate",
-              "spaceAggregation": "sum",
+              "aggregateOperator": "latest",
+              "timeAggregation": "latest",
+              "spaceAggregation": "avg",
               "reduceTo": "last",
               "filters": { "items": [], "op": "AND" },
-              "groupBy": [],
+              "groupBy": [
+                {
+                  "key": "exported_instance",
+                  "dataType": "string",
+                  "id": "exported_instance--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "app",
+                  "dataType": "string",
+                  "id": "app--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "region",
+                  "dataType": "string",
+                  "id": "region--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                }
+              ],
               "having": [],
               "legend": "CPU %",
               "limit": null,
@@ -256,23 +269,48 @@
               "queryName": "B",
               "expression": "B",
               "dataSource": "metrics",
-              "disabled": false,
+              "disabled": true,
               "aggregateAttribute": {
-                "key": "",
-                "dataType": "",
-                "id": "",
-                "isColumn": true,
+                "key": "fly_instance_memory_mem_available",
+                "dataType": "float64",
+                "id": "fly_instance_memory_mem_available--float64--Gauge--false",
+                "isColumn": false,
                 "isJSON": false,
-                "type": ""
+                "type": "Gauge"
               },
-              "aggregateOperator": "noop",
-              "timeAggregation": "avg",
+              "aggregateOperator": "latest",
+              "timeAggregation": "latest",
               "spaceAggregation": "avg",
               "reduceTo": "last",
               "filters": { "items": [], "op": "AND" },
-              "groupBy": [],
+              "groupBy": [
+                {
+                  "key": "exported_instance",
+                  "dataType": "string",
+                  "id": "exported_instance--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "app",
+                  "dataType": "string",
+                  "id": "app--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "region",
+                  "dataType": "string",
+                  "id": "region--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                }
+              ],
               "having": [],
-              "legend": "Memory %",
+              "legend": "",
               "limit": null,
               "orderBy": [],
               "stepInterval": 60,
@@ -282,23 +320,48 @@
               "queryName": "C",
               "expression": "C",
               "dataSource": "metrics",
-              "disabled": false,
+              "disabled": true,
               "aggregateAttribute": {
-                "key": "",
-                "dataType": "",
-                "id": "",
-                "isColumn": true,
+                "key": "fly_instance_memory_mem_total",
+                "dataType": "float64",
+                "id": "fly_instance_memory_mem_total--float64--Gauge--false",
+                "isColumn": false,
                 "isJSON": false,
-                "type": ""
+                "type": "Gauge"
               },
-              "aggregateOperator": "noop",
-              "timeAggregation": "rate",
-              "spaceAggregation": "sum",
+              "aggregateOperator": "latest",
+              "timeAggregation": "latest",
+              "spaceAggregation": "avg",
               "reduceTo": "last",
               "filters": { "items": [], "op": "AND" },
-              "groupBy": [],
+              "groupBy": [
+                {
+                  "key": "exported_instance",
+                  "dataType": "string",
+                  "id": "exported_instance--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "app",
+                  "dataType": "string",
+                  "id": "app--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "region",
+                  "dataType": "string",
+                  "id": "region--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                }
+              ],
               "having": [],
-              "legend": "IO Wait %",
+              "legend": "",
               "limit": null,
               "orderBy": [],
               "stepInterval": 60,
@@ -310,19 +373,112 @@
               "dataSource": "metrics",
               "disabled": false,
               "aggregateAttribute": {
-                "key": "",
-                "dataType": "",
-                "id": "",
-                "isColumn": true,
+                "key": "fly_instance_iowait_utilization",
+                "dataType": "float64",
+                "id": "fly_instance_iowait_utilization--float64--Gauge--false",
+                "isColumn": false,
                 "isJSON": false,
-                "type": ""
+                "type": "Gauge"
               },
-              "aggregateOperator": "noop",
-              "timeAggregation": "avg",
+              "aggregateOperator": "latest",
+              "timeAggregation": "latest",
               "spaceAggregation": "avg",
               "reduceTo": "last",
               "filters": { "items": [], "op": "AND" },
-              "groupBy": [],
+              "groupBy": [
+                {
+                  "key": "exported_instance",
+                  "dataType": "string",
+                  "id": "exported_instance--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "app",
+                  "dataType": "string",
+                  "id": "app--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "region",
+                  "dataType": "string",
+                  "id": "region--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "IO Wait %",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "E",
+              "expression": "E",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "fly_instance_load_average",
+                "dataType": "float64",
+                "id": "fly_instance_load_average--float64--Gauge--false",
+                "isColumn": false,
+                "isJSON": false,
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "timeAggregation": "latest",
+              "spaceAggregation": "avg",
+              "reduceTo": "last",
+              "filters": {
+                "items": [
+                  {
+                    "id": "filter-minutes-1",
+                    "key": {
+                      "key": "minutes",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "id": "minutes--string--tag--false"
+                    },
+                    "op": "=",
+                    "value": "1"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "key": "exported_instance",
+                  "dataType": "string",
+                  "id": "exported_instance--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "app",
+                  "dataType": "string",
+                  "id": "app--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                },
+                {
+                  "key": "region",
+                  "dataType": "string",
+                  "id": "region--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "type": "tag"
+                }
+              ],
               "having": [],
               "legend": "Load Avg (1m)",
               "limit": null,
@@ -331,13 +487,21 @@
               "functions": []
             }
           ],
-          "queryFormulas": []
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "(1-B/C)*100",
+              "legend": "Memory %",
+              "disabled": false
+            }
+          ]
         },
         "clickhouse_sql": [
           { "name": "A", "query": "", "legend": "", "disabled": false },
           { "name": "B", "query": "", "legend": "", "disabled": false },
           { "name": "C", "query": "", "legend": "", "disabled": false },
-          { "name": "D", "query": "", "legend": "", "disabled": false }
+          { "name": "D", "query": "", "legend": "", "disabled": false },
+          { "name": "E", "query": "", "legend": "", "disabled": false }
         ]
       }
     }
