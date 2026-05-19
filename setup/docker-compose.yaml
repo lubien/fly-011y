@@ -134,7 +134,7 @@ services:
       - ./opamp-config.yaml:/etc/manager-config.yaml
       - ./otel:/etc/otel
     environment:
-      - OTEL_RESOURCE_ATTRIBUTES=host.name=sprite,os.type=linux
+      - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-sprite,os.type=linux
       - LOW_CARDINAL_EXCEPTION_GROUPING=false
       - SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN=tcp://127.0.0.1:9000
       - SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_CLUSTER=cluster
@@ -196,7 +196,7 @@ services:
       - /sys:/hostfs/sys:ro
       - /:/hostfs:ro
     environment:
-      - OTEL_RESOURCE_ATTRIBUTES=host.name=sprite,os.type=linux
+      - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-sprite,os.type=linux
     logging:
       options:
         max-size: 10m
