@@ -2,11 +2,7 @@
   "title": "Fly.io \u2014 Org Overview",
   "description": "Cross-app view of the entire Fly.io organisation. No filters needed \u2014 covers all apps.",
   "version": "v4",
-  "tags": [
-    "fly.io",
-    "org",
-    "overview"
-  ],
+  "tags": ["fly.io", "org", "overview"],
   "uploadedGrafana": false,
   "layout": [
     {
@@ -520,6 +516,15 @@
           "type": "tag"
         }
       ],
+      "contextLinks": {
+        "linksData": [
+          {
+            "id": "cl-open-app",
+            "label": "Open App in Fly.io ↗",
+            "url": "https://fly.io/apps/{{_app}}"
+          }
+        ]
+      },
       "query": {
         "id": "f0f4d8dd-873b-4677-859e-e96d65c0b519",
         "queryType": "promql",
@@ -650,6 +655,15 @@
           "type": "tag"
         }
       ],
+      "contextLinks": {
+        "linksData": [
+          {
+            "id": "cl-open-app",
+            "label": "Open App in Fly.io ↗",
+            "url": "https://fly.io/apps/{{_app}}"
+          }
+        ]
+      },
       "query": {
         "id": "ffca8c7b-3474-4e14-8182-0a5d86375601",
         "queryType": "promql",
@@ -832,6 +846,15 @@
           "type": "tag"
         }
       ],
+      "contextLinks": {
+        "linksData": [
+          {
+            "id": "cl-open-app",
+            "label": "Open App in Fly.io ↗",
+            "url": "https://fly.io/apps/{{_app}}"
+          }
+        ]
+      },
       "query": {
         "id": "95fa59f0-76b4-4341-9ef1-c4ec1fd01126",
         "queryType": "promql",
@@ -960,6 +983,15 @@
           "type": "tag"
         }
       ],
+      "contextLinks": {
+        "linksData": [
+          {
+            "id": "cl-open-app",
+            "label": "Open App in Fly.io ↗",
+            "url": "https://fly.io/apps/{{_app}}"
+          }
+        ]
+      },
       "query": {
         "id": "f74045da-77b7-4bcb-a102-fdaa85396790",
         "queryType": "promql",
@@ -1096,6 +1128,15 @@
           "type": "tag"
         }
       ],
+      "contextLinks": {
+        "linksData": [
+          {
+            "id": "cl-open-app",
+            "label": "Open App in Fly.io ↗",
+            "url": "https://fly.io/apps/{{_app}}"
+          }
+        ]
+      },
       "query": {
         "id": "42bc2723-52e5-4ee3-a33d-6cb9e27c6413",
         "queryType": "promql",
