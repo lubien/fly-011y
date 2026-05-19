@@ -237,7 +237,20 @@ processors:
           - action: experimental_scale_value
             experimental_scale: 512
 
-  # 5. Copy host.name from resource attributes → data-point attributes.
+  # 5. Force system.cpu.time to Cumulative temporality.
+  #    metricstransform action:insert does not inherit the source metric's
+  #    temporality — it defaults to Unspecified. SigNoz's Infrastructure Hosts
+  #    page queries system.cpu.time with temporality='Cumulative'; without this
+  #    fix Fly machines are invisible in the Hosts list.
+  #    AGGREGATION_TEMPORALITY_CUMULATIVE = 2 in the OTel proto enum.
+  transform/fly-fix-cpu-time-temporality:
+    error_mode: ignore
+    metric_statements:
+      - context: metric
+        statements:
+          - set(aggregation_temporality, 2) where name == "system.cpu.time"
+
+  # 6. Copy host.name from resource attributes → data-point attributes.
   #    SigNoz queries host.name as AttributeKeyTypeResource (resource attr) AND as a
   #    plain label (data-point attr). Having it in both guarantees discovery works.
   #    resource.attributes[key] is valid in OTTL datapoint context.
@@ -371,6 +384,7 @@ service:
         - groupbyattrs/fly-promote-to-resource
         - resource/fly-set-hostname
         - metricstransform/fly-to-system
+        - transform/fly-fix-cpu-time-temporality
         - transform/fly-copy-hostname-to-dp
         - filter/otel-system-only
         - batch
