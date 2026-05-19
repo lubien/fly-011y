@@ -1,0 +1,345 @@
+{
+  "title": "Fly.io \u2014 Machines Overview",
+  "description": "All active Fly.io machines for the selected app and time period. One row per machine: CPU utilisation %, memory utilisation %, I/O wait %, and 1-minute load average. Machines that did not report metrics in the selected window are excluded automatically. Mimics the SigNoz Infrastructure Monitoring hosts view.",
+  "version": "v4",
+  "tags": ["fly.io", "infrastructure", "machines", "hosts", "overview"],
+  "uploadedGrafana": false,
+  "layout": [
+    {
+      "i": "f1e2d3c4-b5a6-4890-fedc-ba9876543210",
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 1,
+      "moved": false,
+      "static": false,
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12
+    },
+    {
+      "i": "a1b2c3d4-e5f6-4890-abcd-ef1234567890",
+      "x": 0,
+      "y": 1,
+      "w": 12,
+      "h": 12,
+      "moved": false,
+      "static": false
+    }
+  ],
+  "widgets": [
+    {
+      "id": "f1e2d3c4-b5a6-4890-fedc-ba9876543210",
+      "title": "Active Machines",
+      "description": "",
+      "panelTypes": "row"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-4890-abcd-ef1234567890",
+      "title": "Machine Resource Usage",
+      "description": "One row per active Fly.io machine. CPU %, Memory %, and IO Wait % are derived from fly_instance_cpu and fly_instance_memory_* metrics. Load Avg is the 1-minute load average. Only machines that reported metrics within the selected time window are shown.",
+      "panelTypes": "table",
+      "yAxisUnit": "none",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMin": 0,
+      "softMax": 0,
+      "mergeAllActiveQueries": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {
+        "A": "percent",
+        "B": "percent",
+        "C": "percent"
+      },
+      "thresholds": [
+        {
+          "index": "0",
+          "keyIndex": 0,
+          "thresholdOperator": ">",
+          "thresholdValue": 85,
+          "thresholdUnit": "percent",
+          "thresholdColor": "#e84749",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Critical",
+          "thresholdTableOptions": "A",
+          "selectedGraph": "table"
+        },
+        {
+          "index": "1",
+          "keyIndex": 1,
+          "thresholdOperator": ">",
+          "thresholdValue": 60,
+          "thresholdUnit": "percent",
+          "thresholdColor": "#d89614",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Warning",
+          "thresholdTableOptions": "A",
+          "selectedGraph": "table"
+        },
+        {
+          "index": "2",
+          "keyIndex": 2,
+          "thresholdOperator": ">",
+          "thresholdValue": 90,
+          "thresholdUnit": "percent",
+          "thresholdColor": "#e84749",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Critical",
+          "thresholdTableOptions": "B",
+          "selectedGraph": "table"
+        },
+        {
+          "index": "3",
+          "keyIndex": 3,
+          "thresholdOperator": ">",
+          "thresholdValue": 70,
+          "thresholdUnit": "percent",
+          "thresholdColor": "#d89614",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Warning",
+          "thresholdTableOptions": "B",
+          "selectedGraph": "table"
+        },
+        {
+          "index": "4",
+          "keyIndex": 4,
+          "thresholdOperator": ">",
+          "thresholdValue": 20,
+          "thresholdUnit": "percent",
+          "thresholdColor": "#e84749",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Critical",
+          "thresholdTableOptions": "C",
+          "selectedGraph": "table"
+        },
+        {
+          "index": "5",
+          "keyIndex": 5,
+          "thresholdOperator": ">",
+          "thresholdValue": 5,
+          "thresholdUnit": "percent",
+          "thresholdColor": "#d89614",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Warning",
+          "thresholdTableOptions": "C",
+          "selectedGraph": "table"
+        }
+      ],
+      "selectedLogFields": [
+        { "name": "body", "dataType": "string", "type": "" },
+        { "name": "timestamp", "dataType": "string", "type": "" }
+      ],
+      "selectedTracesFields": [
+        {
+          "key": "serviceName",
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "name",
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "durationNano",
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "httpMethod",
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        },
+        {
+          "key": "responseStatusCode",
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "type": "tag"
+        }
+      ],
+      "query": {
+        "id": "c3d4e5f6-a7b8-4012-cdef-012345678901",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (exported_instance, region) (rate(fly_instance_cpu{app=\"$app\", mode!=\"idle\"}[5m])) / sum by (exported_instance, region) (rate(fly_instance_cpu{app=\"$app\"}[5m])) * 100",
+            "legend": "CPU %",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "avg by (exported_instance, region) ((fly_instance_memory_mem_total{app=\"$app\"} - fly_instance_memory_mem_available{app=\"$app\"}) / fly_instance_memory_mem_total{app=\"$app\"} * 100)",
+            "legend": "Memory %",
+            "disabled": false
+          },
+          {
+            "name": "C",
+            "query": "sum by (exported_instance, region) (rate(fly_instance_cpu{app=\"$app\", mode=\"iowait\"}[5m])) / sum by (exported_instance, region) (rate(fly_instance_cpu{app=\"$app\"}[5m])) * 100",
+            "legend": "IO Wait %",
+            "disabled": false
+          },
+          {
+            "name": "D",
+            "query": "avg by (exported_instance, region) (fly_instance_load_average{app=\"$app\", minutes=\"1\"})",
+            "legend": "Load Avg (1m)",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "expression": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "last",
+              "filters": { "items": [], "op": "AND" },
+              "groupBy": [],
+              "having": [],
+              "legend": "CPU %",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "B",
+              "expression": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "reduceTo": "last",
+              "filters": { "items": [], "op": "AND" },
+              "groupBy": [],
+              "having": [],
+              "legend": "Memory %",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "C",
+              "expression": "C",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "rate",
+              "spaceAggregation": "sum",
+              "reduceTo": "last",
+              "filters": { "items": [], "op": "AND" },
+              "groupBy": [],
+              "having": [],
+              "legend": "IO Wait %",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            },
+            {
+              "queryName": "D",
+              "expression": "D",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "key": "",
+                "dataType": "",
+                "id": "",
+                "isColumn": true,
+                "isJSON": false,
+                "type": ""
+              },
+              "aggregateOperator": "noop",
+              "timeAggregation": "avg",
+              "spaceAggregation": "avg",
+              "reduceTo": "last",
+              "filters": { "items": [], "op": "AND" },
+              "groupBy": [],
+              "having": [],
+              "legend": "Load Avg (1m)",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60,
+              "functions": []
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false },
+          { "name": "B", "query": "", "legend": "", "disabled": false },
+          { "name": "C", "query": "", "legend": "", "disabled": false },
+          { "name": "D", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    }
+  ],
+  "panelMap": {},
+  "variables": {
+    "d4e5f6a7-b8c9-4123-defa-0123456789ab": {
+      "id": "d4e5f6a7-b8c9-4123-defa-0123456789ab",
+      "name": "app",
+      "description": "Fly.io app name",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'app') AS app FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'fly_instance_up' GROUP BY app ORDER BY app",
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": false,
+      "allSelected": false,
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "order": 1,
+      "modificationUUID": "e5f6a7b8-c9d0-4234-efab-123456789012"
+    }
+  }
+}
