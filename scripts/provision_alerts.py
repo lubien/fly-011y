@@ -241,8 +241,31 @@ def ta(
     )
 
 
-def la(name, desc, severity, window, filter_expr, threshold, match="at_least_once"):
-    """Log-count-based alert. Fires when count of matching logs > threshold."""
+def _log_attr(key, data_type="string"):
+    """Descriptor for a log attribute in a groupBy clause."""
+    return {
+        "key": key,
+        "dataType": data_type,
+        "type": "tag",
+        "isColumn": False,
+        "isJSON": False,
+    }
+
+
+def la(
+    name,
+    desc,
+    severity,
+    window,
+    filter_expr,
+    threshold,
+    match="at_least_once",
+    group_by=None,
+):
+    """Log-count-based alert. Fires when count of matching logs > threshold.
+
+    group_by: list of _log_attr() descriptors, e.g. [_log_attr('app')]
+    """
     return _rule(
         name,
         desc,
@@ -267,7 +290,7 @@ def la(name, desc, severity, window, filter_expr, threshold, match="at_least_onc
                             "aggregations": [
                                 {"expression": "count()", "alias": "count"}
                             ],
-                            "groupBy": [],
+                            "groupBy": group_by or [],
                         },
                     }
                 ],
@@ -757,6 +780,7 @@ ALERTS = [
         "body contains 'PC05'",
         5,
         "in_total",
+        group_by=[_log_attr("app")],
     ),
     la(
         "[7.3] Proxy: Machine Wake Failures (PM02/PM03)",
