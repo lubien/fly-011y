@@ -75,6 +75,11 @@ exporters:
       insecure: true
 
 service:
+  # Disable the default Prometheus metrics exporter — port 8888 is already
+  # used by the signoz-otel-collector on the shared host network.
+  telemetry:
+    metrics:
+      level: none
   pipelines:
     metrics:
       receivers: [hostmetrics]
