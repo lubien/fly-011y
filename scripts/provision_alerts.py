@@ -121,8 +121,33 @@ def _rule(name, desc, severity, alert_type, rule_type, window, condition):
     }
 
 
-def pa(name, desc, severity, window, query, op, target, match="at_least_once"):
-    """PromQL-based metric alert."""
+def pa(
+    name,
+    desc,
+    severity,
+    window,
+    query,
+    op,
+    target,
+    match="at_least_once",
+    absent=False,
+    absent_for_ms=None,
+):
+    """PromQL-based metric alert.
+
+    absent=True  — also fire when the metric produces NO data at all
+                   (e.g. because ClickHouse can't be written to and the
+                   metric series disappears from the store).
+    absent_for_ms  — how long to wait before firing on absence, in ms.
+                    Defaults to the same as evalWindow.
+    """
+    if absent and absent_for_ms is None:
+        # Parse evalWindow string like "15m0s" → ms
+        import re as _re
+
+        m = _re.match(r"(\d+)m", window)
+        absent_for_ms = int(m.group(1)) * 60 * 1000 if m else 900_000
+
     return _rule(
         name,
         desc,
@@ -153,6 +178,8 @@ def pa(name, desc, severity, window, query, op, target, match="at_least_once"):
             "selectedQueryName": "A",
             "targetUnit": "",
             "requireMinPoints": False,
+            "alertOnAbsent": absent,
+            "absentFor": absent_for_ms or 0,
         },
     )
 
@@ -276,6 +303,7 @@ ALERTS = [
         "below_or_equal",
         0,
         "all_the_times",
+        absent=True,  # also fire if the metric itself stops flowing to ClickHouse
     ),
     pa(
         "[P0] Metrics Pipeline Silent",
@@ -288,6 +316,7 @@ ALERTS = [
         "below_or_equal",
         0,
         "all_the_times",
+        absent=True,
     ),
     pa(
         "[P0] Collector Dropping Telemetry",
@@ -302,6 +331,7 @@ ALERTS = [
         "above",
         0,
         "at_least_once",
+        absent=True,
     ),
     pa(
         "[P1] Collector ClickHouse Write Errors",
