@@ -53,6 +53,15 @@ processors:
     timeout: 2s
   # ── Fly.io → SigNoz Hosts UI ──────────────────────────────────────────────
 
+  # Keeps only the two memory metrics needed for utilization computation
+  # so the fly-memory-route pipeline sends a minimal payload to the sidecar.
+  filter/fly-memory-for-sidecar:
+    error_mode: ignore
+    metrics:
+      include:
+        match_type: regexp
+        metric_names: ["^fly_instance_memory_(active|mem_total)$"]
+
   # 1. Only pass fly_instance_* into the transformation pipeline
   filter/fly-instance-only:
     error_mode: ignore
@@ -350,6 +359,16 @@ exporters:
     dsn: tcp://127.0.0.1:9000/signoz_logs
     timeout: 10s
     use_new_schema: true
+  # Forwards raw Fly memory metrics to the host-metrics sidecar (otelcol-contrib)
+  # which computes system.memory.utilization via metricsgeneration and sends
+  # it back via OTLP to port 4317.
+  otlp/host-metrics-sidecar:
+    endpoint: localhost:14317
+    tls:
+      insecure: true
+    sending_queue:
+      enabled: false
+
   signozclickhousemeter:
     dsn: tcp://127.0.0.1:9000/signoz_meter
     timeout: 45s
@@ -395,6 +414,17 @@ service:
         - filter/otel-system-only
         - batch
       exporters: [signozclickhousemetrics, metadataexporter]
+    # Routes fly_instance_memory_active + fly_instance_memory_mem_total to the
+    # host-metrics sidecar (otelcol-contrib) which computes the utilization ratio
+    # via metricsgeneration and sends system.memory.utilization back.
+    metrics/fly-memory-route:
+      receivers: [prometheus]
+      processors:
+        - filter/fly-memory-for-sidecar
+        - groupbyattrs/fly-promote-to-resource
+        - resource/fly-set-hostname
+        - batch
+      exporters: [otlp/host-metrics-sidecar]
     logs:
       receivers: [otlp, httplogreceiver/json]
       processors: [batch]
