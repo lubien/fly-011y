@@ -114,7 +114,7 @@
         "clickhouse_sql": [
           {
             "name": "A",
-            "query": "SELECT count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '')",
+            "query": "SELECT count() AS value FROM signoz_logs.logs_v2 WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '')",
             "legend": "errors in window",
             "disabled": false
           }
@@ -190,7 +190,7 @@
         "clickhouse_sql": [
           {
             "name": "A",
-            "query": "SELECT toStartOfInterval(toDateTime(intDiv(timestamp, 1000000000)), INTERVAL {{.step_seconds}} SECOND) AS ts, severity_text, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') GROUP BY ts, severity_text ORDER BY ts ASC",
+            "query": "SELECT toStartOfInterval(toDateTime(intDiv(timestamp, 1000000000)), INTERVAL toUInt32({{.step_seconds}}) SECOND) AS ts, severity_text, count() AS value FROM signoz_logs.logs_v2 WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') GROUP BY ts, severity_text ORDER BY ts ASC",
             "legend": "{{severity_text}}",
             "disabled": false
           }
@@ -266,7 +266,7 @@
         "clickhouse_sql": [
           {
             "name": "A",
-            "query": "SELECT attribute_string_app AS app, countIf(severity_text IN ('ERROR','FATAL')) AS errors, count() AS total, round(countIf(severity_text IN ('ERROR','FATAL')) / count() * 100, 2) AS error_pct FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND attribute_string_app != '' GROUP BY app ORDER BY errors DESC LIMIT 20",
+            "query": "SELECT attribute_string_app AS app, countIf(severity_text IN ('ERROR','FATAL')) AS errors, count() AS total, round(countIf(severity_text IN ('ERROR','FATAL')) / count() * 100, 2) AS error_pct FROM signoz_logs.logs_v2 WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND attribute_string_app != '' GROUP BY app ORDER BY errors DESC LIMIT 20",
             "legend": "apps",
             "disabled": false
           }
@@ -336,7 +336,7 @@
         "clickhouse_sql": [
           {
             "name": "A",
-            "query": "SELECT toStartOfInterval(toDateTime(intDiv(timestamp, 1000000000)), INTERVAL {{.step_seconds}} SECOND) AS ts, attribute_string_app AS app, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND attribute_string_app != '' GROUP BY ts, app ORDER BY ts ASC",
+            "query": "SELECT toStartOfInterval(toDateTime(intDiv(timestamp, 1000000000)), INTERVAL toUInt32({{.step_seconds}}) SECOND) AS ts, attribute_string_app AS app, count() AS value FROM signoz_logs.logs_v2 WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND attribute_string_app != '' GROUP BY ts, app ORDER BY ts ASC",
             "legend": "{{app}}",
             "disabled": false
           }
@@ -412,7 +412,7 @@
         "clickhouse_sql": [
           {
             "name": "A",
-            "query": "SELECT toDateTime(intDiv(timestamp, 1000000000)) AS ts, attribute_string_app AS app, attribute_string_instance AS instance, attribute_string_region AS region, severity_text, body FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') ORDER BY timestamp DESC LIMIT 50",
+            "query": "SELECT toDateTime(intDiv(timestamp, 1000000000)) AS ts, attribute_string_app AS app, attribute_string_instance AS instance, attribute_string_region AS region, severity_text, body FROM signoz_logs.logs_v2 WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND severity_text IN ('ERROR', 'FATAL') AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') ORDER BY timestamp DESC LIMIT 50",
             "legend": "recent errors",
             "disabled": false
           }
@@ -488,7 +488,7 @@
         "clickhouse_sql": [
           {
             "name": "A",
-            "query": "SELECT attribute_string_region AS region, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') AND attribute_string_region != '' GROUP BY region ORDER BY value DESC",
+            "query": "SELECT attribute_string_region AS region, count() AS value FROM signoz_logs.logs_v2 WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') AND attribute_string_region != '' GROUP BY region ORDER BY value DESC",
             "legend": "{{region}}",
             "disabled": false
           }
@@ -558,7 +558,7 @@
         "clickhouse_sql": [
           {
             "name": "A",
-            "query": "SELECT attribute_string_process_group AS process_group, count() AS value FROM signoz_logs.distributed_logs WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') AND attribute_string_process_group != '' GROUP BY process_group ORDER BY value DESC",
+            "query": "SELECT attribute_string_process_group AS process_group, count() AS value FROM signoz_logs.logs_v2 WHERE timestamp >= {{.start_timestamp_ms}} * 1000000 AND timestamp <= {{.end_timestamp_ms}} * 1000000 AND (attribute_string_app = '{{.app}}' OR '{{.app}}' = '') AND attribute_string_process_group != '' GROUP BY process_group ORDER BY value DESC",
             "legend": "{{process_group}}",
             "disabled": false
           }
@@ -613,7 +613,7 @@
       "name": "app",
       "description": "Fly.io app",
       "type": "QUERY",
-      "queryValue": "SELECT DISTINCT attribute_string_app AS app FROM signoz_logs.distributed_logs WHERE attribute_string_app != '' ORDER BY app LIMIT 1000",
+      "queryValue": "SELECT DISTINCT attribute_string_app AS app FROM signoz_logs.logs_v2 WHERE attribute_string_app != '' ORDER BY app LIMIT 1000",
       "defaultValue": "",
       "customValue": "",
       "textboxValue": "",
