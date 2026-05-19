@@ -116,6 +116,35 @@ processors:
           - action: experimental_scale_value
             experimental_scale: 0.01
 
+      # ── CPU utilization (gauge, 0–1 per state per CPU) ───────────────────
+      # After cumulativetodelta/fly-cpu, fly_instance_cpu is now delta
+      # centiseconds per 60 s scrape window. Dividing by 6000
+      # (60 s × 100 cs/s/CPU) yields a per-CPU per-state fraction 0–1.
+      - include: fly_instance_cpu
+        match_type: strict
+        action: insert
+        new_name: system.cpu.utilization
+        operations:
+          - action: update_label
+            label: mode
+            new_label: state
+          - action: update_label
+            label: cpu_id
+            new_label: cpu
+          - action: experimental_scale_value
+            experimental_scale: 0.000166667   # 1/6000
+
+      # ── Rename iowait → wait in system.cpu.utilization (────────────────
+      - include: system.cpu.utilization
+        match_type: strict
+        action: update
+        operations:
+          - action: aggregate_label_values
+            label: state
+            aggregated_values: [iowait]
+            new_value: wait
+            aggregation_type: sum
+
       # Rename iowait → wait in system.cpu.time so SigNoz CPU wait % works.
       # Must come after the insert above so system.cpu.time already exists.
       # update_label doesn't support value renaming in this version.
@@ -228,7 +257,16 @@ processors:
           - action: experimental_scale_value
             experimental_scale: 512
 
-  # 5. Copy host.name from resource attributes → data-point attributes.
+  # 5a. Convert fly_instance_cpu from cumulative counter to delta per scrape
+  #     interval so we can scale it into a 0–1 utilization fraction.
+  #     Only applied in the metrics/fly-as-host pipeline via include filter.
+  cumulativetodelta/fly-cpu:
+    include:
+      match_type: strict
+      metrics:
+        - fly_instance_cpu
+
+  # 5b. Copy host.name from resource attributes → data-point attributes.
   #    SigNoz queries host.name as AttributeKeyTypeResource (resource attr) AND as a
   #    plain label (data-point attr). Having it in both guarantees discovery works.
   #    resource.attributes[key] is valid in OTTL datapoint context.
@@ -349,6 +387,7 @@ service:
       receivers: [prometheus]
       processors:
         - filter/fly-instance-only
+        - cumulativetodelta/fly-cpu
         - groupbyattrs/fly-promote-to-resource
         - resource/fly-set-hostname
         - metricstransform/fly-to-system
