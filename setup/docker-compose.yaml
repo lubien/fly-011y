@@ -127,8 +127,7 @@ services:
       - -c
       - |
         /signoz-otel-collector migrate sync check &&
-        /signoz-otel-collector --config=/etc/otel-collector-config.yaml \
-          --manager-config=/etc/manager-config.yaml
+        /signoz-otel-collector --config=/etc/otel-collector-config.yaml
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
       - ./opamp-config.yaml:/etc/manager-config.yaml
