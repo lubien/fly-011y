@@ -1,1 +1,13 @@
-server_endpoint: ws://localhost:4320/v1/opamp
+# OpAMP agent manager configuration.
+#
+# IMPORTANT — pointing to port 9999 intentionally disables the OpAMP server
+# connection. After a SigNoz version update, the server started pushing a
+# "clean-slate" config with nop receivers/exporters to every new agent ID
+# (which changes on each collector restart), overwriting the working local
+# config and breaking all metric pipelines.
+#
+# With OpAMP disabled the collector runs exclusively from
+# otel-collector-config.yaml, which is the correct, fully-configured file.
+# If the SigNoz agent management UI is needed in the future, restore this to:
+#   server_endpoint: ws://localhost:4320/v1/opamp
+server_endpoint: ws://localhost:9999/v1/opamp

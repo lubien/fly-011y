@@ -37,7 +37,7 @@
     {
       "id": "a1b2c3d4-e5f6-4890-abcd-ef1234567890",
       "title": "Machine Resource Usage",
-      "description": "One row per active Fly.io machine across all apps. CPU % and IO Wait % come from pre-computed gauges (fly_instance_cpu_utilization, fly_instance_iowait_utilization) built in the OTel pipeline. Memory % is derived from fly_instance_memory_mem_available / fly_instance_memory_mem_total. Load Avg is the 1-minute load average.",
+      "description": "One row per active Fly.io machine across all apps. CPU % = user-mode CPU load (fly_instance_cpu_delta_user / fly_instance_cpu_delta_total × 100). Values above 100% on multi-CPU machines indicate that more than one full CPU core is in use — divide by the number of CPUs to get per-core %. IO Wait %, Memory %, and Load Avg are computed from fly_instance_cpu and fly_instance_memory_* gauges via the OTel pipeline.",
       "panelTypes": "table",
       "yAxisUnit": "none",
       "timePreferance": "GLOBAL_TIME",

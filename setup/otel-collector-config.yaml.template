@@ -282,17 +282,21 @@ processors:
     error_mode: ignore
     metrics:
       include:
-        match_type: strict
-        metric_names: ["fly_instance_cpu"]
+        match_type: regexp
+        metric_names: ["^fly_instance_cpu(|_baseline)$"]
 
   # Convert cumulative counter → per-scrape-interval delta.
-  # Note: max_stale is not supported in this build; omit it.
+  # Note: max_stale and subtract are not supported in this collector build.
   cumulativetodelta/fly-cpu:
     include:
-      match_type: strict
+      match_type: regexp
       metrics:
-        - "fly_instance_cpu"
+        - "^fly_instance_cpu(|_baseline)$"
 
+  # Aggregate the per-(cpu_id, mode) delta series into per-(instance, app, region) sums.
+  # NOTE: aggregate_labels sums across modes but not cpu_ids in this build.
+  # fly_instance_cpu_utilization therefore represents user-mode CPU load across all
+  # cores: values >100% on multi-CPU machines mean >1 full CPU equivalent in use.
   metricstransform/fly-cpu-deltas:
     transforms:
       - include: fly_instance_cpu
@@ -305,9 +309,9 @@ processors:
             aggregation_type: sum
       - include: fly_instance_cpu
         match_type: strict
-        experimental_match_labels: {mode: "idle"}
+        experimental_match_labels: {mode: "user"}
         action: insert
-        new_name: fly_instance_cpu_delta_idle
+        new_name: fly_instance_cpu_delta_user
         operations:
           - action: aggregate_labels
             label_set: [exported_instance, app, region]
@@ -324,16 +328,13 @@ processors:
 
   metricsgeneration/fly-cpu-utilization:
     rules:
-      - name: fly_instance_cpu_delta_active
-        unit: "cs"
-        type: calculate
-        metric1: fly_instance_cpu_delta_total
-        metric2: fly_instance_cpu_delta_idle
-        operation: subtract
+      # user / total * 100 = user-mode CPU load across all cores.
+      # Values >100 on multi-CPU machines indicate >1 full CPU equivalent in use.
+      # metricsgeneration subtract is not supported in this collector build.
       - name: fly_instance_cpu_utilization
         unit: "1"
         type: calculate
-        metric1: fly_instance_cpu_delta_active
+        metric1: fly_instance_cpu_delta_user
         metric2: fly_instance_cpu_delta_total
         operation: divide
       - name: fly_instance_iowait_utilization
