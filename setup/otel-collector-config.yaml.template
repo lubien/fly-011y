@@ -58,7 +58,6 @@ processors:
     keys: [exported_instance, app, region]
 
   # Set host.name = exported_instance (the Fly.io VM machine ID).
-  # Used by fly-memory-route and fly-cpu-utilization pipelines.
   resource/fly-set-hostname:
     attributes:
       - action: upsert
@@ -76,106 +75,6 @@ processors:
           - set(attributes["exported_instance"], resource.attributes["exported_instance"])
           - set(attributes["app"], resource.attributes["app"])
           - set(attributes["region"], resource.attributes["region"])
-
-  # ── Fly.io CPU & IOWait Utilisation Gauges ───────────────────────────────
-  # fly_instance_cpu is a monotonic counter (centiseconds per cpu_id × mode).
-  # The SigNoz Query Builder has no rate() time aggregation, so we pre-compute
-  # per-instance utilisation as 0-100 Gauge metrics at ingest time.
-  #
-  # Pipeline:
-  #   cumulativetodelta → aggregate across cpu_id → subtract idle → divide
-  #   → scale ×100 → stored as fly_instance_cpu_utilization (0-100 Gauge)
-  #                      and fly_instance_iowait_utilization (0-100 Gauge)
-
-  filter/fly-cpu-only:
-    error_mode: ignore
-    metrics:
-      include:
-        match_type: regexp
-        metric_names: ["^fly_instance_cpu(|_baseline)$"]
-
-  # Convert cumulative counter → per-scrape-interval delta.
-  # Note: max_stale and subtract are not supported in this collector build.
-  cumulativetodelta/fly-cpu:
-    include:
-      match_type: regexp
-      metrics:
-        - "^fly_instance_cpu(|_baseline)$"
-
-  # Aggregate the per-(cpu_id, mode) delta series into per-(instance, app, region) sums.
-  # NOTE: aggregate_labels sums across modes but not cpu_ids in this build.
-  # fly_instance_cpu_utilization therefore represents user-mode CPU load across all
-  # cores: values >100% on multi-CPU machines mean >1 full CPU equivalent in use.
-  metricstransform/fly-cpu-deltas:
-    transforms:
-      - include: fly_instance_cpu
-        match_type: strict
-        action: insert
-        new_name: fly_instance_cpu_delta_total
-        operations:
-          - action: aggregate_labels
-            label_set: [exported_instance, app, region]
-            aggregation_type: sum
-      - include: fly_instance_cpu
-        match_type: strict
-        experimental_match_labels: {mode: "user"}
-        action: insert
-        new_name: fly_instance_cpu_delta_user
-        operations:
-          - action: aggregate_labels
-            label_set: [exported_instance, app, region]
-            aggregation_type: sum
-      - include: fly_instance_cpu
-        match_type: strict
-        experimental_match_labels: {mode: "iowait"}
-        action: insert
-        new_name: fly_instance_cpu_delta_iowait
-        operations:
-          - action: aggregate_labels
-            label_set: [exported_instance, app, region]
-            aggregation_type: sum
-
-  metricsgeneration/fly-cpu-utilization:
-    rules:
-      # user / total * 100 = user-mode CPU load across all cores.
-      # Values >100 on multi-CPU machines indicate >1 full CPU equivalent in use.
-      # metricsgeneration subtract is not supported in this collector build.
-      - name: fly_instance_cpu_utilization
-        unit: "1"
-        type: calculate
-        metric1: fly_instance_cpu_delta_user
-        metric2: fly_instance_cpu_delta_total
-        operation: divide
-      - name: fly_instance_iowait_utilization
-        unit: "1"
-        type: calculate
-        metric1: fly_instance_cpu_delta_iowait
-        metric2: fly_instance_cpu_delta_total
-        operation: divide
-
-  metricstransform/fly-cpu-scale:
-    transforms:
-      - include: fly_instance_cpu_utilization
-        match_type: strict
-        action: update
-        operations:
-          - action: experimental_scale_value
-            experimental_scale: 100
-      - include: fly_instance_iowait_utilization
-        match_type: strict
-        action: update
-        operations:
-          - action: experimental_scale_value
-            experimental_scale: 100
-
-  filter/fly-cpu-util-only:
-    error_mode: ignore
-    metrics:
-      include:
-        match_type: regexp
-        metric_names: ["^fly_instance_(cpu|iowait)_utilization$"]
-
-  # ── End Fly.io CPU & IOWait Utilisation Gauges ────────────────────────────
 
   signozspanmetrics/delta:
     metrics_exporter: signozclickhousemetrics
@@ -267,27 +166,15 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
+    # Raw Fly.io metrics plus host.name = exported_instance on every fly_instance_* series.
     metrics/prometheus:
       receivers: [prometheus]
-      processors: [batch]
-      exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
-    # Fly.io per-instance CPU and IOWait utilisation gauges.
-    # cumulativetodelta IS available in signoz-otel-collector; the only
-    # constraint is that max_stale must not be set (unsupported in this build).
-    metrics/fly-cpu-utilization:
-      receivers: [prometheus]
       processors:
-        - filter/fly-cpu-only
-        - cumulativetodelta/fly-cpu
-        - metricstransform/fly-cpu-deltas
-        - metricsgeneration/fly-cpu-utilization
-        - metricstransform/fly-cpu-scale
-        - filter/fly-cpu-util-only
         - groupbyattrs/fly-promote-to-resource
         - resource/fly-set-hostname
         - transform/fly-copy-hostname-to-dp
         - batch
-      exporters: [signozclickhousemetrics, metadataexporter]
+      exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
     logs:
       receivers: [otlp, httplogreceiver/json]
       processors: [batch]
