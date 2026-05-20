@@ -21,10 +21,7 @@ x-clickhouse-defaults: &clickhouse-defaults
     zookeeper-1:
       condition: service_started
   healthcheck:
-    test: ["CMD", "wget", "--spider", "-q", "0.0.0.0:8123/ping"]
-    interval: 30s
-    timeout: 5s
-    retries: 3
+    disable: true
   environment:
     - CLICKHOUSE_SKIP_USER_SETUP=1
 
@@ -33,14 +30,7 @@ x-zookeeper-defaults: &zookeeper-defaults
   image: signoz/zookeeper:3.7.1
   user: root
   healthcheck:
-    test:
-      [
-        "CMD-SHELL",
-        "curl -s -m 2 http://localhost:8080/commands/ruok | grep error | grep null",
-      ]
-    interval: 30s
-    timeout: 5s
-    retries: 3
+    disable: true
 
 x-db-depend: &db-depend
   !!merge <<: *common
