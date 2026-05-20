@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # install.sh — Set up SigNoz on a Sprite sandbox (sprites.dev)
 #
-# ─────────────────────── Installation ────────────────────────
+# Run  install.sh --help  for a full list of subcommands.
+#
+# ─────────────────────── Installation ───────────────────────
 #
 #   curl https://raw.githubusercontent.com/lubien/fly-011y/main/install.sh | bash
 #
@@ -822,6 +824,82 @@ print_access_info() {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Help
+# ══════════════════════════════════════════════════════════════════════════════
+cmd_help() {
+  printf "
+${BOLD}  install.sh${NC} — SigNoz × Sprite installer and management tool
+
+"
+  printf "${BOLD}USAGE${NC}
+"
+  printf "  install.sh [subcommand] [options]
+
+"
+  printf "${BOLD}SUBCOMMANDS${NC}
+
+"
+  printf "  ${CYAN}install${NC}                      Full first-time setup (Docker, SigNoz, config)
+"
+  printf "
+"
+  printf "  ${CYAN}── Fly.io orgs (metrics) ──${NC}
+"
+  printf "  add-org                      Add a Fly.io org and its Prometheus scrape config
+"
+  printf "  remove-org                   Remove a Fly.io org
+"
+  printf "  list-orgs                    List configured Fly.io orgs
+"
+  printf "  regen-config                 Regenerate otel-collector config from current orgs
+"
+  printf "
+"
+  printf "  ${CYAN}── Log shipping ──${NC}
+"
+  printf "  add-log-shipper              Deploy a Fly.io log shipper for an org
+"
+  printf "
+"
+  printf "  ${CYAN}── SigNoz provisioning ──${NC}
+"
+  printf "  provision-dashboards         Upsert all dashboards/*.json into SigNoz
+"
+  printf "  provision-alerts             Provision all 40 Fly.io alert rules
+"
+  printf "  provision-pipeline-alerts    Provision only the 4 pipeline health alerts
+"
+  printf "  provision-elixir-pipeline    Push the Elixir/Phoenix log processing pipeline
+"
+  printf "
+"
+  printf "  ${CYAN}── Customisation ──${NC}
+"
+  printf "  configure-email-subject      Fix alert email subjects: show rule name instead
+"
+  printf "                               of the internal UUID (idempotent, safe to re-run)
+"
+  printf "
+"
+  printf "  ${CYAN}── Meta ──${NC}
+"
+  printf "  --help, help                 Show this help message
+"
+  printf "
+"
+  printf "${BOLD}EXAMPLES${NC}
+"
+  printf "  install.sh add-org                   # add a new Fly.io org
+"
+  printf "  install.sh provision-dashboards      # push latest dashboards to SigNoz
+"
+  printf "  install.sh configure-email-subject   # clean up alert email subjects
+"
+  printf "
+"
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Main
 # ══════════════════════════════════════════════════════════════════════════════
 main() {
@@ -893,9 +971,20 @@ main() {
       section "Provision pipeline health alerts"
       python3 "${_script}"
       ;;
+    configure-email-subject)
+      local _script="${INSTALL_DIR}/scripts/configure_email_subject.py"
+      [ -f "${_script}" ] || die "Script not found: ${_script}"
+      command -v python3 &>/dev/null || die "python3 is required but not installed."
+      section "Configure alert email subject"
+      python3 "${_script}"
+      ;;
+    --help|help)
+      cmd_help
+      ;;
     *)
-      die "Unknown command '${cmd}'." \
-          "Usage: install.sh [install|add-org|remove-org|list-orgs|regen-config|add-log-shipper|provision-elixir-pipeline]"
+      printf "  ${RED}✗${NC}  Unknown subcommand: '${cmd}'\n\n" >&2
+      cmd_help
+      exit 1
       ;;
   esac
 }
