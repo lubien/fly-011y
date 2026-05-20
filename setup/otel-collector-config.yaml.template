@@ -51,8 +51,6 @@ processors:
     # Using OTEL_RESOURCE_ATTRIBUTES envvar, env detector adds custom labels.
     detectors: [env, system]
     timeout: 2s
-  # ── Fly.io → SigNoz Hosts UI ──────────────────────────────────────────────
-
   # Keeps only the two memory metrics needed for utilization computation
   # so the fly-memory-route pipeline sends a minimal payload to the sidecar.
   filter/fly-memory-for-sidecar:
@@ -62,211 +60,31 @@ processors:
         match_type: regexp
         metric_names: ["^fly_instance_memory_(active|mem_total)$"]
 
-  # 1. Only pass fly_instance_* into the transformation pipeline
-  filter/fly-instance-only:
-    error_mode: ignore
-    metrics:
-      include:
-        match_type: regexp
-        metric_names: ["^fly_instance_.*"]
-
-  # 2. Promote exported_instance/app/region from data-point labels → resource attributes.
-  #    The Prometheus receiver renames the Fly.io `instance` metric label to
-  #    `exported_instance` because `instance` is a reserved Prometheus meta-label
-  #    (the scrape target address). Any metric label named `instance` gets prefixed
-  #    with `exported_` automatically to avoid the conflict.
+  # Promote exported_instance/app/region from data-point labels → resource attributes.
+  # The Prometheus receiver renames the Fly.io `instance` label to `exported_instance`
+  # because `instance` is a reserved Prometheus meta-label (the scrape target address).
   groupbyattrs/fly-promote-to-resource:
     keys: [exported_instance, app, region]
 
-  # 3. Set host.name = exported_instance (the Fly.io VM machine ID).
+  # Set host.name = exported_instance (the Fly.io VM machine ID).
+  # Used by fly-memory-route and fly-cpu-utilization pipelines.
   resource/fly-set-hostname:
     attributes:
       - action: upsert
         key: host.name
         from_attribute: exported_instance
 
-  # 4. Create OTel system.* metrics from fly_instance_* (action: insert keeps originals)
-  metricstransform/fly-to-system:
-    transforms:
-      # ── Load averages (gauge → gauge, direct) ─────────────────────────────
-      # Note: delete_label is not a valid operation in this metricstransform version.
-      # The `minutes` label remains on the inserted metrics but causes no issues:
-      # experimental_match_labels ensures each named metric only contains data points
-      # for that specific minutes value, so there is no cross-contamination.
-      - include: fly_instance_load_average
-        match_type: strict
-        experimental_match_labels: { minutes: "15" }
-        action: insert
-        new_name: system.cpu.load_average.15m
-      - include: fly_instance_load_average
-        match_type: strict
-        experimental_match_labels: { minutes: "5" }
-        action: insert
-        new_name: system.cpu.load_average.5m
-      - include: fly_instance_load_average
-        match_type: strict
-        experimental_match_labels: { minutes: "1" }
-        action: insert
-        new_name: system.cpu.load_average.1m
-
-      # ── CPU time (counter, centiseconds → seconds × 0.01) ─────────────────
-      # action:update (not insert) renames in-place, preserving Sum/Cumulative
-      # type. action:insert creates a Gauge copy — Gauges have no temporality
-      # and get stored as 'Unspecified', making the metric invisible to SigNoz's
-      # Infrastructure Hosts query which filters temporality='Cumulative'.
-      - include: fly_instance_cpu
-        match_type: strict
-        action: update
-        new_name: system.cpu.time
-        operations:
-          - action: update_label
-            label: mode
-            new_label: state
-          - action: update_label
-            label: cpu_id
-            new_label: cpu
-          - action: experimental_scale_value
-            experimental_scale: 0.01
-
-      # Rename iowait → wait in system.cpu.time so SigNoz CPU wait % works.
-      # Must come after the insert above so system.cpu.time already exists.
-      # update_label doesn't support value renaming in this version.
-      # aggregate_label_values with a single input = rename (no actual aggregation).
-      - include: system.cpu.time
-        match_type: strict
-        action: update
-        operations:
-          - action: aggregate_label_values
-            label: state
-            aggregated_values: [iowait]
-            new_value: wait
-            aggregation_type: sum
-
-      # ── Memory (gauge, bytes) ──────────────────────────────────────────────
-      # state="used" uses active memory as proxy (see docs/fly-signoz-hosts-ui.md)
-      - include: fly_instance_memory_active
-        match_type: strict
-        action: insert
-        new_name: system.memory.usage
-        operations:
-          - action: add_label
-            new_label: state
-            new_value: used
-      - include: fly_instance_memory_mem_free
-        match_type: strict
-        action: insert
-        new_name: system.memory.usage
-        operations:
-          - action: add_label
-            new_label: state
-            new_value: free
-      - include: fly_instance_memory_cached
-        match_type: strict
-        action: insert
-        new_name: system.memory.usage
-        operations:
-          - action: add_label
-            new_label: state
-            new_value: cached
-      - include: fly_instance_memory_buffers
-        match_type: strict
-        action: insert
-        new_name: system.memory.usage
-        operations:
-          - action: add_label
-            new_label: state
-            new_value: buffered
-      # inactive + slab fill out the denominator so memory% ≈ active/total
-      - include: fly_instance_memory_inactive
-        match_type: strict
-        action: insert
-        new_name: system.memory.usage
-        operations:
-          - action: add_label
-            new_label: state
-            new_value: inactive
-      - include: fly_instance_memory_slab
-        match_type: strict
-        action: insert
-        new_name: system.memory.usage
-        operations:
-          - action: add_label
-            new_label: state
-            new_value: slab
-
-      # ── Network I/O (counter, bytes) ───────────────────────────────────────
-      - include: fly_instance_net_recv_bytes
-        match_type: strict
-        action: insert
-        new_name: system.network.io
-        operations:
-          - action: add_label
-            new_label: direction
-            new_value: receive
-          - action: update_label
-            label: device
-            new_label: interface
-      - include: fly_instance_net_sent_bytes
-        match_type: strict
-        action: insert
-        new_name: system.network.io
-        operations:
-          - action: add_label
-            new_label: direction
-            new_value: transmit
-          - action: update_label
-            label: device
-            new_label: interface
-
-      # ── Disk I/O (counter, sectors × 512 → bytes) ─────────────────────────
-      - include: fly_instance_disk_sectors_read
-        match_type: strict
-        action: insert
-        new_name: system.disk.io
-        operations:
-          - action: add_label
-            new_label: direction
-            new_value: read
-          - action: experimental_scale_value
-            experimental_scale: 512
-      - include: fly_instance_disk_sectors_written
-        match_type: strict
-        action: insert
-        new_name: system.disk.io
-        operations:
-          - action: add_label
-            new_label: direction
-            new_value: write
-          - action: experimental_scale_value
-            experimental_scale: 512
-
-  # 5. Copy host.name from resource attributes → data-point attributes.
-  #    SigNoz queries host.name as AttributeKeyTypeResource (resource attr) AND as a
-  #    plain label (data-point attr). Having it in both guarantees discovery works.
-  #    resource.attributes[key] is valid in OTTL datapoint context.
+  # Copy host.name and grouping labels from resource attributes → data-point attributes
+  # so the SigNoz Query Builder can discover and group by them.
   transform/fly-copy-hostname-to-dp:
     error_mode: ignore
     metric_statements:
       - context: datapoint
         statements:
           - set(attributes["host.name"], resource.attributes["host.name"])
-          # Also copy grouping labels to data-point attributes so the Query
-          # Builder can discover and group by them (it surfaces both resource
-          # and data-point attributes, but data-point labels are more reliably
-          # indexed as selectable dimensions).
           - set(attributes["exported_instance"], resource.attributes["exported_instance"])
           - set(attributes["app"], resource.attributes["app"])
           - set(attributes["region"], resource.attributes["region"])
-
-  # 6. Drop the fly_instance_* originals; keep only system.* for the Hosts UI pipeline
-  filter/otel-system-only:
-    error_mode: ignore
-    metrics:
-      include:
-        match_type: regexp
-        metric_names: ["^system\\..*"]
-
-  # ── End Fly.io → SigNoz Hosts UI ──────────────────────────────────────────
 
   # ── Fly.io CPU & IOWait Utilisation Gauges ───────────────────────────────
   # fly_instance_cpu is a monotonic counter (centiseconds per cpu_id × mode).
@@ -472,19 +290,6 @@ service:
       receivers: [prometheus]
       processors: [batch]
       exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
-    # Fly.io VMs as SigNoz hosts — transforms fly_instance_* → system.* OTel names
-    # The prometheus receiver fans out to both this pipeline and metrics/prometheus above
-    metrics/fly-as-host:
-      receivers: [prometheus]
-      processors:
-        - filter/fly-instance-only
-        - groupbyattrs/fly-promote-to-resource
-        - resource/fly-set-hostname
-        - metricstransform/fly-to-system
-        - transform/fly-copy-hostname-to-dp
-        - filter/otel-system-only
-        - batch
-      exporters: [signozclickhousemetrics, metadataexporter]
     # Routes fly_instance_memory_active + fly_instance_memory_mem_total to the
     # host-metrics sidecar (otelcol-contrib) which computes the utilization ratio
     # via metricsgeneration and sends system.memory.utilization back.
