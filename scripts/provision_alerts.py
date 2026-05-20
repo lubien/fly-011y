@@ -10,6 +10,17 @@ All alerts automatically use every configured notification channel so you
 never have to think about it. Add or remove channels in SigNoz →
 Settings → Alert Channels and re-run this script to sync.
 
+Design philosophy — sensible defaults, not production-tuned rules:
+  These alerts are deliberately broad so they work out-of-the-box for any
+  Fly.io org.  They are intended to be used as starting points: clone a rule
+  in SigNoz → Alert Rules, narrow its app/instance filter, adjust the
+  threshold, and leave the original in place as an org-wide safety net.
+
+  Ratio-based alerts (error %, SLO, rollback rate, cache hit rate) include
+  a minimum-traffic `unless` guard so that a handful of requests on a
+  low-traffic or staging app cannot trip an alert that was designed to
+  measure sustained error rates on a busy service.
+
 Usage:
   install.sh provision-alerts
 
@@ -420,14 +431,27 @@ ALERTS = [
     # ══════════════════════════════════════════════════════════════════════════
     # 2. Error Rate / SLO
     # ══════════════════════════════════════════════════════════════════════════
+    # ── Traffic-floor guard ──────────────────────────────────────────────────
+    # All ratio alerts in this section append an `unless` clause that
+    # suppresses firing when the app has fewer than N requests/second in the
+    # evaluation window.  This prevents a handful of requests on a staging or
+    # low-traffic app from producing a statistically meaningless ratio that
+    # trips an org-wide alert.
+    #
+    # These are sensible defaults — clone the rule in SigNoz, narrow the app
+    # filter, and tune the threshold/floor for your specific service.
     pa(
         "[2.1] HTTP 5xx Error Rate — Critical",
         "More than 5% of requests are returning 5xx errors — SLO breach. "
-        "User-facing impact is ongoing.",
+        "User-facing impact is ongoing. "
+        "Only fires when the app has ≥1 req/s (≥300 requests in the 5-minute window) "
+        "so a single 5xx on a quiet app cannot trigger this. "
+        "Clone and narrow the app filter to tune for a specific service.",
         "critical",
         "5m0s",
         'sum by (app) (rate(fly_edge_http_responses_count{status=~"5.."}[5m])) / '
-        "sum by (app) (rate(fly_edge_http_responses_count[5m]))",
+        "sum by (app) (rate(fly_edge_http_responses_count[5m])) "
+        "unless (sum by (app) (rate(fly_edge_http_responses_count[5m])) < 1)",
         "above",
         0.05,
         "on_average",
@@ -435,11 +459,14 @@ ALERTS = [
     pa(
         "[2.2] HTTP 5xx Error Rate — Warning",
         "Between 1–5% of requests are returning 5xx errors. "
-        "May indicate a partial failure — investigate before it escalates.",
+        "May indicate a partial failure — investigate before it escalates. "
+        "Only fires when the app has ≥1 req/s (≥300 requests in the 5-minute window). "
+        "Clone and narrow the app filter to tune for a specific service.",
         "warning",
         "10m0s",
         'sum by (app) (rate(fly_edge_http_responses_count{status=~"5.."}[5m])) / '
-        "sum by (app) (rate(fly_edge_http_responses_count[5m]))",
+        "sum by (app) (rate(fly_edge_http_responses_count[5m])) "
+        "unless (sum by (app) (rate(fly_edge_http_responses_count[5m])) < 1)",
         "above",
         0.01,
         "on_average",
@@ -447,22 +474,32 @@ ALERTS = [
     pa(
         "[2.3] HTTP 4xx Error Rate Spike",
         "More than 20% of requests are returning 4xx responses. "
-        "May indicate a bad deploy, broken API contract, or credential regression.",
+        "May indicate a bad deploy, broken API contract, or credential regression. "
+        "Only fires when the app has ≥1 req/s (≥300 requests in the 5-minute window) "
+        "so occasional 404s on a low-traffic app are ignored. "
+        "Clone and lower the threshold if your app has predictable 4xx patterns.",
         "warning",
         "10m0s",
         'sum by (app) (rate(fly_edge_http_responses_count{status=~"4.."}[5m])) / '
-        "sum by (app) (rate(fly_edge_http_responses_count[5m]))",
+        "sum by (app) (rate(fly_edge_http_responses_count[5m])) "
+        "unless (sum by (app) (rate(fly_edge_http_responses_count[5m])) < 1)",
         "above",
         0.20,
         "on_average",
     ),
     pa(
         "[2.4] HTTP Success Rate Below SLO",
-        "HTTP success rate has dropped below the 99.9% SLO target.",
+        "HTTP 2xx success rate has dropped below 99.9% on average. "
+        "At 99.9%, a single failed request out of 1000 breaches the threshold, so "
+        "this alert requires ≥5 req/s (≥1500 requests in the 5-minute window) "
+        "to be statistically meaningful. "
+        "For lower-traffic services, clone this alert and use a more achievable "
+        "SLO target (e.g. 95%) or extend the evaluation window.",
         "critical",
         "5m0s",
         'sum by (app) (rate(fly_edge_http_responses_count{status=~"2.."}[5m])) / '
-        "sum by (app) (rate(fly_edge_http_responses_count[5m]))",
+        "sum by (app) (rate(fly_edge_http_responses_count[5m])) "
+        "unless (sum by (app) (rate(fly_edge_http_responses_count[5m])) < 5)",
         "below",
         0.999,
         "on_average",
@@ -470,23 +507,36 @@ ALERTS = [
     # ══════════════════════════════════════════════════════════════════════════
     # 3. Latency SLO
     # ══════════════════════════════════════════════════════════════════════════
+    # ── Traffic-floor guard (latency) ─────────────────────────────────────────
+    # histogram_quantile produces unreliable results with very few samples:
+    # a single slow request becomes the P99 when only 2–3 requests exist.
+    # The `unless` guard suppresses latency alerts for apps with <1 req/s.
+    # Clone and adjust the threshold for apps with known slow operations
+    # (e.g. exclude long-polling endpoints via a label filter).
     pa(
         "[3.1] P99 Latency — Critical",
         "The 99th percentile response time exceeds 2.5 seconds. "
-        "Often caused by GC pauses, database lock contention, or a cold-starting machine.",
+        "Often caused by GC pauses, database lock contention, or a cold-starting machine. "
+        "Only fires when the app has ≥1 req/s so a single slow request on a quiet "
+        "app does not inflate P99. Clone and add an endpoint filter for apps with "
+        "known-slow streaming or long-polling routes.",
         "critical",
         "5m0s",
-        "histogram_quantile(0.99, sum by (app, le) (rate(fly_edge_http_response_time_seconds_bucket[5m])))",
+        "histogram_quantile(0.99, sum by (app, le) (rate(fly_edge_http_response_time_seconds_bucket[5m]))) "
+        "unless (sum by (app) (rate(fly_edge_http_responses_count[5m])) < 1)",
         "above",
         2.5,
         "on_average",
     ),
     pa(
         "[3.2] P99 Latency — Warning",
-        "The 99th percentile response time has been above 1 second for 10 minutes.",
+        "The 99th percentile response time has been above 1 second for 10 minutes. "
+        "Only fires when the app has ≥1 req/s. "
+        "Clone and add an endpoint filter for apps with known-slow routes.",
         "warning",
         "10m0s",
-        "histogram_quantile(0.99, sum by (app, le) (rate(fly_edge_http_response_time_seconds_bucket[5m])))",
+        "histogram_quantile(0.99, sum by (app, le) (rate(fly_edge_http_response_time_seconds_bucket[5m]))) "
+        "unless (sum by (app) (rate(fly_edge_http_responses_count[5m])) < 1)",
         "above",
         1.0,
         "on_average",
@@ -494,10 +544,12 @@ ALERTS = [
     pa(
         "[3.3] P50 Latency Elevated",
         "Median (P50) response time has been above 500ms for 15 minutes. "
-        "Unlike P99 spikes this indicates a widespread, systemic slowdown.",
+        "Unlike P99 spikes this indicates a widespread, systemic slowdown. "
+        "Only fires when the app has ≥1 req/s.",
         "warning",
         "15m0s",
-        "histogram_quantile(0.50, sum by (app, le) (rate(fly_edge_http_response_time_seconds_bucket[5m])))",
+        "histogram_quantile(0.50, sum by (app, le) (rate(fly_edge_http_response_time_seconds_bucket[5m]))) "
+        "unless (sum by (app) (rate(fly_edge_http_responses_count[5m])) < 1)",
         "above",
         0.5,
         "on_average",
@@ -713,12 +765,19 @@ ALERTS = [
     pa(
         "[6.4] Postgres Rollback Rate High",
         "More than 5% of Postgres transactions are rolling back. "
-        "Indicates application errors, constraint violations, or serialization failures.",
+        "Indicates application errors, constraint violations, or serialization failures. "
+        "Only fires when the database has ≥0.1 transactions/second (6 tps/minute) "
+        "so a single rollback on an idle database cannot trigger this. "
+        "Clone and lower the threshold for databases with known-noisy workloads.",
         "warning",
         "15m0s",
         "sum by (app, datname) (rate(pg_stat_database_xact_rollback[5m])) / "
         "(sum by (app, datname) (rate(pg_stat_database_xact_commit[5m])) + "
-        "sum by (app, datname) (rate(pg_stat_database_xact_rollback[5m])))",
+        "sum by (app, datname) (rate(pg_stat_database_xact_rollback[5m]))) "
+        "unless ("
+        "(sum by (app, datname) (rate(pg_stat_database_xact_commit[5m])) + "
+        "sum by (app, datname) (rate(pg_stat_database_xact_rollback[5m]))) < 0.1"
+        ")",
         "above",
         0.05,
         "on_average",
@@ -737,12 +796,18 @@ ALERTS = [
     pa(
         "[6.6] Postgres Cache Hit Rate Low",
         "Postgres buffer cache hit rate is below 90% — queries are reading from disk. "
-        "May indicate shared_buffers is too small or a new full-scan query.",
+        "May indicate shared_buffers is too small or a new full-scan query. "
+        "Only fires when the database has ≥1 block operation/second so a cold "
+        "start or completely idle database does not produce a spurious alert.",
         "warning",
         "30m0s",
         "sum by (app, datname) (rate(pg_stat_database_blks_hit[5m])) / "
         "(sum by (app, datname) (rate(pg_stat_database_blks_hit[5m])) + "
-        "sum by (app, datname) (rate(pg_stat_database_blks_read[5m])))",
+        "sum by (app, datname) (rate(pg_stat_database_blks_read[5m]))) "
+        "unless ("
+        "(sum by (app, datname) (rate(pg_stat_database_blks_hit[5m])) + "
+        "sum by (app, datname) (rate(pg_stat_database_blks_read[5m]))) < 1"
+        ")",
         "below",
         0.90,
         "on_average",
