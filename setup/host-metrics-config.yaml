@@ -10,13 +10,6 @@
 # collector image does not include the hostmetrics receiver.
 
 receivers:
-  # Receives raw Fly memory metrics forwarded by signoz-otel-collector
-  # for utilization ratio computation via metricsgeneration.
-  otlp:
-    protocols:
-      grpc:
-        endpoint: localhost:14317
-
   hostmetrics:
     root_path: /hostfs
     collection_interval: 30s
@@ -75,18 +68,6 @@ processors:
     send_batch_size: 1000
     timeout: 10s
 
-  # Computes system.memory.utilization = fly_instance_memory_active / fly_instance_memory_mem_total.
-  # Receives the two raw Fly metrics from signoz-otel-collector, which has already
-  # promoted exported_instance/app/region to resource attributes and set host.name.
-  metricsgeneration/fly-memory-utilization:
-    rules:
-      - name: system.memory.utilization
-        unit: "1"
-        type: calculate
-        metric1: fly_instance_memory_active
-        metric2: fly_instance_memory_mem_total
-        operation: divide
-
 exporters:
   otlp:
     endpoint: localhost:4317
@@ -100,16 +81,8 @@ service:
     metrics:
       level: none
   pipelines:
-    # Host system metrics: CPU, memory, disk, network, load, processes.
+    # Sprite host system metrics: CPU, memory, disk, network, load, processes.
     metrics/host:
       receivers: [hostmetrics]
       processors: [resourcedetection, batch]
-      exporters: [otlp]
-
-    # Fly VM memory utilization: receives raw fly_instance_memory_* metrics
-    # from signoz-otel-collector on port 14317, computes active/total ratio,
-    # and forwards system.memory.utilization back to signoz-otel-collector.
-    metrics/fly-memory:
-      receivers: [otlp]
-      processors: [metricsgeneration/fly-memory-utilization, batch]
       exporters: [otlp]
