@@ -7,6 +7,13 @@
             <host>localhost</host>
             <port>9181</port>
         </node>
+        <!-- Request a 5-minute session timeout from Keeper.
+             The server-side max (keeper_server.coordination_settings.session_timeout_ms)
+             must be >= this value. Together they set the effective session lifetime,
+             giving enough slack to survive a CPU spike from a post-outage write flood
+             without expiring replica sessions and pushing tables into readonly mode. -->
+        <session_timeout_ms>300000</session_timeout_ms>
+        <operation_timeout_ms>30000</operation_timeout_ms>
     </zookeeper>
     <remote_servers>
         <cluster>

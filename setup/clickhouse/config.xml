@@ -1162,9 +1162,9 @@
         <log_storage_path>/var/lib/clickhouse/coordination/log</log_storage_path>
         <snapshot_storage_path>/var/lib/clickhouse/coordination/snapshots</snapshot_storage_path>
         <coordination_settings>
-            <operation_timeout_ms>10000</operation_timeout_ms>
-            <min_session_timeout_ms>10000</min_session_timeout_ms>
-            <session_timeout_ms>100000</session_timeout_ms>
+            <operation_timeout_ms>30000</operation_timeout_ms>
+            <min_session_timeout_ms>30000</min_session_timeout_ms>
+            <session_timeout_ms>300000</session_timeout_ms>
             <raft_logs_level>warning</raft_logs_level>
             <!-- Key fix: disable synchronous fsync so Raft commits are never blocked
                  waiting for the WAL to flush to disk. (Setting name in CH 25.x is

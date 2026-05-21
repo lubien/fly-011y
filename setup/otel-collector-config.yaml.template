@@ -133,12 +133,18 @@ exporters:
     datasource: tcp://127.0.0.1:9000/signoz_traces
     low_cardinal_exception_grouping: ${env:LOW_CARDINAL_EXCEPTION_GROUPING}
     use_new_schema: true
+    sending_queue:
+      num_consumers: 2
   signozclickhousemetrics:
     dsn: tcp://127.0.0.1:9000/signoz_metrics
+    sending_queue:
+      num_consumers: 2
   clickhouselogsexporter:
     dsn: tcp://127.0.0.1:9000/signoz_logs
     timeout: 10s
     use_new_schema: true
+    sending_queue:
+      num_consumers: 2
   signozclickhousemeter:
     dsn: tcp://127.0.0.1:9000/signoz_meter
     timeout: 45s
