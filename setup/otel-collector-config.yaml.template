@@ -135,16 +135,31 @@ exporters:
     use_new_schema: true
     sending_queue:
       num_consumers: 2
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 5m
   signozclickhousemetrics:
     dsn: tcp://127.0.0.1:9000/signoz_metrics
     sending_queue:
       num_consumers: 2
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 5m
   clickhouselogsexporter:
     dsn: tcp://127.0.0.1:9000/signoz_logs
     timeout: 10s
     use_new_schema: true
     sending_queue:
       num_consumers: 2
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 5m
   signozclickhousemeter:
     dsn: tcp://127.0.0.1:9000/signoz_meter
     timeout: 45s

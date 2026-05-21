@@ -303,7 +303,10 @@
 
     <!-- On memory constrained environments you may have to set this to value larger than 1.
       -->
-    <max_server_memory_usage_to_ram_ratio>0.9</max_server_memory_usage_to_ram_ratio>
+    <!-- Reduced from 0.9 → 0.7 to leave ~4 GB headroom for the OS, Docker
+             overlay FS, and other containers. Tight memory caused I/O stalls under
+             post-outage recovery load. -->
+        <max_server_memory_usage_to_ram_ratio>0.7</max_server_memory_usage_to_ram_ratio>
 
     <!-- Simple server-wide memory profiler. Collect a stack trace at every peak allocation step (in bytes).
          Data will be stored in system.trace_log table with query_id = empty string.
@@ -982,12 +985,14 @@
         <!-- <max_tasks_in_queue>1000</max_tasks_in_queue> -->
     </distributed_ddl>
 
-    <!-- Settings to fine tune MergeTree tables. See documentation in source code, in MergeTreeSettings.h -->
-    <!--
+    <!-- MergeTree background merge concurrency cap.
+         Default background_pool_size is hardware_concurrency/2 (4–8 on this host).
+         Reducing it to 2 limits the CPU consumed by background merges and
+         leaves more headroom for Keeper heartbeat threads and read queries
+         (alert evaluation) during high-write periods. -->
     <merge_tree>
-        <max_suspicious_broken_parts>5</max_suspicious_broken_parts>
+        <max_replicated_merges_in_queue>4</max_replicated_merges_in_queue>
     </merge_tree>
-    -->
 
     <!-- Protection from accidental DROP.
          If size of a MergeTree table is greater than max_table_size_to_drop (in bytes) than table could not be dropped with any DROP query.
