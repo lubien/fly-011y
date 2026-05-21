@@ -1166,8 +1166,10 @@
             <min_session_timeout_ms>10000</min_session_timeout_ms>
             <session_timeout_ms>100000</session_timeout_ms>
             <raft_logs_level>warning</raft_logs_level>
-            <!-- Key fix: Raft commits are not blocked waiting for fsync to complete. -->
-            <async_fsync>true</async_fsync>
+            <!-- Key fix: disable synchronous fsync so Raft commits are never blocked
+                 waiting for the WAL to flush to disk. (Setting name in CH 25.x is
+                 force_sync, not async_fsync.) -->
+            <force_sync>false</force_sync>
         </coordination_settings>
         <raft_configuration>
             <server>
