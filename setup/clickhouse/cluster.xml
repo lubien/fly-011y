@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <clickhouse>
+    <!-- ClickHouse Keeper runs embedded inside the clickhouse container on port 9181.
+         Replaced external Zookeeper to eliminate WAL fsync stalls on slow Virtio storage. -->
     <zookeeper>
-        <node index="1">
-            <host>zookeeper-1</host>
-            <port>2181</port>
+        <node>
+            <host>localhost</host>
+            <port>9181</port>
         </node>
     </zookeeper>
     <remote_servers>

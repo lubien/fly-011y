@@ -1139,4 +1139,44 @@
         <lru_cache_size>268435456</lru_cache_size>
         <continue_if_corrupted>true</continue_if_corrupted>
     </merge_tree_metadata_cache>
+
+    <!-- ClickHouse Keeper — embedded ZooKeeper-compatible coordination service.
+         Replaces the external Zookeeper container (removed from docker-compose.yaml).
+
+         Why async_fsync: the external Zookeeper was fsyncing its 64 MB WAL for
+         up to 27 seconds on the Sprite VM's Virtio block device, which exceeded
+         the 30-second session timeout and put every ReplicatedMergeTree table into
+         readonly mode, causing the OTel collector to drop all telemetry.
+         async_fsync lets Keeper write its log without blocking the Raft commit path
+         on disk I/O. The only tradeoff is that in a sudden crash the last few
+         milliseconds of coordination log may not be on disk — acceptable for a
+         single-node observability deployment.
+
+         Storage: kept inside the existing signoz-clickhouse Docker volume under
+         /var/lib/clickhouse/coordination/, so no new volume is needed.
+    -->
+    <keeper_server>
+        <tcp_port>9181</tcp_port>
+        <!-- Unique Raft node ID. Single-node cluster, always 1. -->
+        <server_id>1</server_id>
+        <log_storage_path>/var/lib/clickhouse/coordination/log</log_storage_path>
+        <snapshot_storage_path>/var/lib/clickhouse/coordination/snapshots</snapshot_storage_path>
+        <coordination_settings>
+            <operation_timeout_ms>10000</operation_timeout_ms>
+            <min_session_timeout_ms>10000</min_session_timeout_ms>
+            <session_timeout_ms>100000</session_timeout_ms>
+            <raft_logs_level>warning</raft_logs_level>
+            <!-- Key fix: Raft commits are not blocked waiting for fsync to complete. -->
+            <async_fsync>true</async_fsync>
+        </coordination_settings>
+        <raft_configuration>
+            <server>
+                <id>1</id>
+                <hostname>localhost</hostname>
+                <!-- Raft inter-node port. Unused in single-node mode but required by config. -->
+                <port>9234</port>
+            </server>
+        </raft_configuration>
+    </keeper_server>
+
 </clickhouse>

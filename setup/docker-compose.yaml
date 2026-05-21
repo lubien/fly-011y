@@ -18,19 +18,10 @@ x-clickhouse-defaults: &clickhouse-defaults
   depends_on:
     init-clickhouse:
       condition: service_completed_successfully
-    zookeeper-1:
-      condition: service_started
   healthcheck:
     disable: true
   environment:
     - CLICKHOUSE_SKIP_USER_SETUP=1
-
-x-zookeeper-defaults: &zookeeper-defaults
-  !!merge <<: *common
-  image: signoz/zookeeper:3.7.1
-  user: root
-  healthcheck:
-    disable: true
 
 x-db-depend: &db-depend
   !!merge <<: *common
@@ -58,18 +49,6 @@ services:
     restart: on-failure
     volumes:
       - ./clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
-
-  zookeeper-1:
-    !!merge <<: *zookeeper-defaults
-    container_name: signoz-zookeeper-1
-    volumes:
-      - zookeeper-1:/bitnami/zookeeper
-    environment:
-      - ZOO_SERVER_ID=1
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOO_AUTOPURGE_INTERVAL=1
-      - ZOO_ENABLE_PROMETHEUS_METRICS=yes
-      - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
 
   clickhouse:
     !!merge <<: *clickhouse-defaults
@@ -200,5 +179,3 @@ volumes:
     name: signoz-clickhouse
   sqlite:
     name: signoz-sqlite
-  zookeeper-1:
-    name: signoz-zookeeper-1
