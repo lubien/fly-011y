@@ -823,6 +823,39 @@ print_access_info() {
   printf "\n"
 }
 
+# ── Subcommand: setup-keep-alive ─────────────────────────────────────────────
+cmd_setup_keep_alive() {
+  section "Sprite keep-alive"
+
+  local script="${INSTALL_DIR}/scripts/keep_alive.sh"
+  [ -f "${script}" ] || die "keep_alive.sh not found at ${script}. Pull the latest repo first."
+  chmod +x "${script}"
+
+  if sprite-env services get keep-alive &>/dev/null; then
+    info "keep-alive service already registered."
+  else
+    info "Registering keep-alive heartbeat service…"
+    sprite-env services create keep-alive --cmd "${script}" --no-stream
+    success "keep-alive service registered."
+  fi
+
+  # Give the service a moment to start and register the task
+  sleep 3
+
+  local tasks
+  tasks=$(curl -s --unix-socket /.sprite/api.sock http://sprite/v1/tasks 2>/dev/null || echo "{}")
+
+  if echo "${tasks}" | grep -q "keep-alive"; then
+    success "Sprite is now held alive — task 'signoz-keep-alive' is active."
+    echo "${tasks}" | grep -o '"expires_at":"[^"]*"' | head -1 \
+      | sed 's/"expires_at":"//;s/"//' \
+      | xargs -I{} info "Expires at: {}"
+  else
+    warn "Task not yet visible. Check manually:"
+    info "  curl --unix-socket /.sprite/api.sock http://sprite/v1/tasks"
+  fi
+}
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Help
 # ══════════════════════════════════════════════════════════════════════════════
@@ -879,6 +912,9 @@ ${BOLD}  install.sh${NC} — SigNoz × Sprite installer and management tool
 "
   printf "                               of the internal UUID (idempotent, safe to re-run)
 "
+  printf "  setup-keep-alive             Register a Sprite heartbeat service that keeps\n"
+  printf "                               the VM running so ClickHouse TCP connections\n"
+  printf "                               never drop due to suspension\n"
   printf "
 "
   printf "  ${CYAN}── Meta ──${NC}
@@ -977,6 +1013,9 @@ main() {
       command -v python3 &>/dev/null || die "python3 is required but not installed."
       section "Configure alert email subject"
       python3 "${_script}"
+      ;;
+    setup-keep-alive)
+      cmd_setup_keep_alive
       ;;
     --help|help)
       cmd_help
