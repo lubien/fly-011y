@@ -64,6 +64,16 @@ processors:
         key: host.name
         from_attribute: exported_instance
 
+  # Bridge the Fly.io `app` label to the OTel `service.name` resource attribute.
+  # Logs shipped by the log-shipper already carry service.name = app name.
+  # Adding it here means SigNoz can correlate infrastructure metrics with those
+  # logs inline, without any manual filtering.
+  resource/fly-set-service-name:
+    attributes:
+      - action: upsert
+        key: service.name
+        from_attribute: app
+
   # Copy host.name and grouping labels from resource attributes → data-point attributes
   # so the SigNoz Query Builder can discover and group by them.
   transform/fly-copy-hostname-to-dp:
@@ -75,6 +85,7 @@ processors:
           - set(attributes["exported_instance"], resource.attributes["exported_instance"])
           - set(attributes["app"], resource.attributes["app"])
           - set(attributes["region"], resource.attributes["region"])
+          - set(attributes["service.name"], resource.attributes["service.name"])
 
   signozspanmetrics/delta:
     metrics_exporter: signozclickhousemetrics
@@ -193,6 +204,7 @@ service:
       processors:
         - groupbyattrs/fly-promote-to-resource
         - resource/fly-set-hostname
+        - resource/fly-set-service-name
         - transform/fly-copy-hostname-to-dp
         - batch
       exporters: [signozclickhousemetrics, metadataexporter, signozmeter]
